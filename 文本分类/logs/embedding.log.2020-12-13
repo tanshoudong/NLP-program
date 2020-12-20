@@ -1,0 +1,10 @@
+2020-12-13 16:10:55,800 - G:\JD_NLP\full_learning_file\Project\JDNLP-program_1st_code\bookClassification(solution)\src\word2vec\embedding.py[line:160] - INFO: load tfidf model
+2020-12-13 16:11:50,404 - G:\JD_NLP\full_learning_file\Project\JDNLP-program_1st_code\bookClassification(solution)\src\word2vec\embedding.py[line:163] - INFO: load w2v model
+2020-12-13 16:12:00,553 - G:\JD_NLP\full_learning_file\Project\JDNLP-program_1st_code\bookClassification(solution)\src\word2vec\embedding.py[line:167] - INFO: load fast model
+2020-12-13 16:12:09,239 - G:\JD_NLP\full_learning_file\Project\JDNLP-program_1st_code\bookClassification(solution)\src\word2vec\embedding.py[line:171] - INFO: load lda model
+2020-12-13 16:12:10,840 - G:\JD_NLP\full_learning_file\Project\JDNLP-program_1st_code\bookClassification(solution)\src\word2vec\embedding.py[line:175] - INFO: load autoencoder model
+2020-12-13 17:02:34,775 - G:\JD_NLP\full_learning_file\Project\JDNLP-program_1st_code\bookClassification(solution)\src\word2vec\embedding.py[line:160] - INFO: load tfidf model
+2020-12-13 17:03:37,158 - G:\JD_NLP\full_learning_file\Project\JDNLP-program_1st_code\bookClassification(solution)\src\word2vec\embedding.py[line:163] - INFO: load w2v model
+2020-12-13 17:03:46,193 - G:\JD_NLP\full_learning_file\Project\JDNLP-program_1st_code\bookClassification(solution)\src\word2vec\embedding.py[line:167] - INFO: load fast model
+2020-12-13 17:03:55,232 - G:\JD_NLP\full_learning_file\Project\JDNLP-program_1st_code\bookClassification(solution)\src\word2vec\embedding.py[line:171] - INFO: load lda model
+2020-12-13 17:03:55,629 - G:\JD_NLP\full_learning_file\Project\JDNLP-program_1st_code\bookClassification(solution)\src\word2vec\embedding.py[line:175] - INFO: load autoencoder model

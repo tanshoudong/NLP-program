@@ -1,0 +1,19 @@
+2020-12-13 16:12:38,608 - G:\JD_NLP\full_learning_file\Project\JDNLP-program_1st_code\bookClassification(solution)\src\ML\models.py[line:231] - INFO: get all freature
+2020-12-13 16:12:38,639 - G:\JD_NLP\full_learning_file\Project\JDNLP-program_1st_code\bookClassification(solution)\src\ML\models.py[line:107] - INFO: generate embedding feature 
+2020-12-13 16:12:59,515 - G:\JD_NLP\full_learning_file\Project\JDNLP-program_1st_code\bookClassification(solution)\src\ML\models.py[line:116] - INFO: generate autoencoder feature 
+2020-12-13 16:13:03,572 - G:\JD_NLP\full_learning_file\Project\JDNLP-program_1st_code\bookClassification(solution)\src\ML\models.py[line:131] - INFO: generate basic feature 
+2020-12-13 16:19:11,420 - G:\JD_NLP\full_learning_file\Project\JDNLP-program_1st_code\bookClassification(solution)\src\ML\models.py[line:163] - INFO: generate bert feature 
+2020-12-13 16:40:10,600 - G:\JD_NLP\full_learning_file\Project\JDNLP-program_1st_code\bookClassification(solution)\src\ML\models.py[line:171] - INFO: generate lda feature 
+2020-12-13 17:04:29,462 - G:\JD_NLP\full_learning_file\Project\JDNLP-program_1st_code\bookClassification(solution)\src\ML\models.py[line:231] - INFO: get all freature
+2020-12-13 17:04:30,650 - G:\JD_NLP\full_learning_file\Project\JDNLP-program_1st_code\bookClassification(solution)\src\ML\models.py[line:107] - INFO: generate embedding feature 
+2020-12-13 17:04:52,182 - G:\JD_NLP\full_learning_file\Project\JDNLP-program_1st_code\bookClassification(solution)\src\ML\models.py[line:116] - INFO: generate autoencoder feature 
+2020-12-13 17:04:57,437 - G:\JD_NLP\full_learning_file\Project\JDNLP-program_1st_code\bookClassification(solution)\src\ML\models.py[line:131] - INFO: generate basic feature 
+2020-12-13 17:05:18,861 - G:\JD_NLP\full_learning_file\Project\JDNLP-program_1st_code\bookClassification(solution)\src\ML\models.py[line:163] - INFO: generate bert feature 
+2020-12-13 17:14:11,778 - G:\JD_NLP\full_learning_file\Project\JDNLP-program_1st_code\bookClassification(solution)\src\ML\models.py[line:171] - INFO: generate lda feature 
+2020-12-13 17:21:31,288 - G:\JD_NLP\full_learning_file\Project\JDNLP-program_1st_code\bookClassification(solution)\src\ML\models.py[line:185] - INFO: formate data
+2020-12-13 18:03:27,659 - G:\JD_NLP\full_learning_file\Project\JDNLP-program_1st_code\bookClassification(solution)\src\ML\models.py[line:258] - INFO: search best param
+2020-12-13 18:03:40,313 - G:\JD_NLP\full_learning_file\Project\JDNLP-program_1st_code\bookClassification(solution)\src\ML\models.py[line:269] - INFO: fit model 
+2020-12-13 21:09:04,149 - G:\JD_NLP\full_learning_file\Project\JDNLP-program_1st_code\bookClassification(solution)\src\ML\models.py[line:280] - INFO: Train accuracy 0.778
+2020-12-13 21:09:04,191 - G:\JD_NLP\full_learning_file\Project\JDNLP-program_1st_code\bookClassification(solution)\src\ML\models.py[line:282] - INFO: test accuracy 0.5
+2020-12-13 21:09:04,231 - G:\JD_NLP\full_learning_file\Project\JDNLP-program_1st_code\bookClassification(solution)\src\ML\models.py[line:284] - INFO: test recall 0.5
+2020-12-13 21:09:04,255 - G:\JD_NLP\full_learning_file\Project\JDNLP-program_1st_code\bookClassification(solution)\src\ML\models.py[line:286] - INFO: test F1_score 0.4369469908580543
