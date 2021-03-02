@@ -56,7 +56,3 @@ class Bert(nn.Module):
             out = torch.sigmoid(out).flatten()
 
         return out, loss
-from run_bert import Bert_Config
-config=Bert_Config()
-model=Bert(config)
-print(model)

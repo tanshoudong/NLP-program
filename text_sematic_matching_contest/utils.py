@@ -95,13 +95,13 @@ class train_vector:
             with open(file=dir,mode="r",encoding="utf-8") as files:
                 for line in files:
                     line=line.strip().split('\t')
-                    text_a,text_b=line[0].split(" "),line[1].split(" ")
+                    text_a,text_b=line[0].strip().split(" "),line[1].strip().split(" ")
                     sentences.append(text_a)
                     sentences.append(text_b)
         print("Sentence Num {}".format(len(sentences)))
-        w2v = Word2Vec(sentences, size=L, window=8, min_count=1, sg=1, workers=32, iter=10)
+        w2v = Word2Vec(sentences, size=L, window=4, min_count=1, sg=1, workers=32, iter=10)
         print("save w2v to {}".format(tmp_dir))
-        pickle.dump(w2v, open(os.path.join(tmp_dir, 'wb')))
+        pickle.dump(w2v, open(tmp_dir,'wb'))
         return w2v
 
 

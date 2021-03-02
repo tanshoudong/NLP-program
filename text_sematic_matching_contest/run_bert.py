@@ -10,9 +10,10 @@ from models import Bert
 class Bert_Config:
     def __init__(self):
         #数据路径
-        self.data_dir = 'D:/text_sematic_matching_contest/data/Preliminary/gaiic_track3_round1_train_20210228.tsv'
+        self.data_dir=os.getcwd()+os.sep+'data'+os.sep+ \
+                      os.path.join('Preliminary', 'gaiic_track3_round1_train_20210228.tsv')
         self.task = 'TianChi'
-        self.embed_dir='./data/vector'
+        self.embed_dir=os.getcwd()+os.sep+'data'+ os.sep + 'vector'
         self.models_name = 'bert'
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.requires_grad = True
@@ -35,10 +36,10 @@ class Bert_Config:
         self.multi_drop = 5
         # logging
         self.is_logging2file = True
-        self.logging_dir = './data/log' + '/' + self.models_name
+        self.logging_dir = os.getcwd()+os.sep+'data'+os.sep+os.path.join('log',self.models_name)
         # save
         self.load_save_model = False
-        self.save_path = ['./data/model_data']
+        self.save_path = [os.getcwd()+os.sep+'data'+os.sep + 'model_data']
         self.save_file = [self.models_name]
         self.seed = 12345
         # 计算loss的方法
@@ -73,6 +74,7 @@ def bert_task(config):
 if __name__ == '__main__':
     config=Bert_Config()
     tmp = train_vector(config)
+    print(1)
     # set_seed(config)
     # logging_filename = None
     #
