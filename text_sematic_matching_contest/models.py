@@ -11,6 +11,7 @@ class Bert(nn.Module):
     def __init__(self, config, num=0):
         super(Bert, self).__init__()
         model_config = BertConfig()
+        model_config.vocab_size = config.vocab_size
         # 计算loss的方法
         self.loss_method = config.loss_method
         self.multi_drop = config.multi_drop
@@ -26,21 +27,19 @@ class Bert(nn.Module):
         else:
             self.classifier = nn.Linear(self.hidden_size, self.num_labels)
 
-    def forward(
-            self,
-            input_ids=None,
-            attention_mask=None,
-            token_type_ids=None,
-            labels=None,
-    ):
-        outputs = self.bert(
-            input_ids,
-            attention_mask=attention_mask,
-            token_type_ids=token_type_ids,
-        )
+        self.classifier.apply(self._init_weights)
+        self.bert.apply(self._init_weights)
 
+    def _init_weights(self, module):
+        """ Initialize the weights """
+        if isinstance(module, (nn.Linear, nn.Embedding)):
+            # Slightly different from the TF version which uses truncated_normal for initialization
+            # cf https://github.com/pytorch/pytorch/pull/5617
+            module.weight.data.normal_(mean=0.0, std=0.02)
+
+    def forward(self,input_ids=None,attention_mask=None,token_type_ids=None,labels=None):
+        outputs = self.bert(input_ids,attention_mask=attention_mask,token_type_ids=token_type_ids)
         pooled_output = outputs[1]
-
         out = None
         loss = 0
         for i in range(self.multi_drop):

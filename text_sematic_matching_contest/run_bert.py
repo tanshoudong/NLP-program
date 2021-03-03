@@ -1,8 +1,10 @@
+#coding utf-8
 import os
 import logging
 import torch
 import time
-from utils import set_seed,DataProcessor,train_vector
+from torch.utils.data import DataLoader
+from utils import set_seed,DataProcessor,train_vector,Vocab,BuildDataSet,collate_fn
 from models import Bert
 
 
@@ -53,16 +55,34 @@ class Bert_Config:
         # prob
         self.out_prob = True
         self.n_gpu = torch.cuda.device_count()
+        self.vocab_size = None
 
 def bert_task(config):
     processor = DataProcessor(config)
     config.class_list = processor.get_labels()
     config.num_labels = len(config.class_list)
     train_examples = processor.get_train_examples()
-    train, valid=processor.train_dev_split(train_examples)
-    model=Bert(config)
+    train, dev=processor.train_dev_split(train_examples)
+
+    #train 词向量，建立词表
+    train_ebeding=train_vector(config)
+    vocab=Vocab()
+    vocab.add_words(train_ebeding.get_all_exampes_words())
+    vocab.build_bert_vocab()
+
+    train_dataset = BuildDataSet(train)
+    train_load = DataLoader(dataset=train_dataset,batch_size=config.batch_size,
+                            shuffle=True,collate_fn=collate_fn)
+    dev_dataset = BuildDataSet(dev)
+    dev_load = DataLoader(dataset=dev_dataset,batch_size=config.batch_size,
+                        shuffle=True,collate_fn=collate_fn)
+    config.vocab_size = train_dataset.tokenizer.vocab_size + 5
+    model = Bert(config)
+    
 
 
+    for batch,(input_ids, token_type_ids, attention_mask, label) in enumerate(train_load):
+        print(batch)
 
 
 
@@ -73,18 +93,16 @@ def bert_task(config):
 
 if __name__ == '__main__':
     config=Bert_Config()
-    tmp = train_vector(config)
-    print(1)
-    # set_seed(config)
-    # logging_filename = None
-    #
-    # if config.is_logging2file is True:
-    #     file = time.strftime('%Y-%m-%d_%H-%M-%S') + '.log'
-    #     logging_filename = os.path.join(config.logging_dir, file)
-    #     if not os.path.exists(config.logging_dir):
-    #         os.makedirs(config.logging_dir)
-    #
-    # logging.basicConfig(filename=logging_filename, format='%(levelname)s: %(message)s', level=logging.INFO)
-    # logging.info("config %s",config.__dict__)
-    # bert_task(config)
+    set_seed(config)
+    logging_filename = None
+
+    if config.is_logging2file is True:
+        file = time.strftime('%Y-%m-%d_%H-%M-%S') + '.log'
+        logging_filename = os.path.join(config.logging_dir, file)
+        if not os.path.exists(config.logging_dir):
+            os.makedirs(config.logging_dir)
+
+    logging.basicConfig(filename=logging_filename, format='%(levelname)s: %(message)s', level=logging.INFO)
+    logging.info("config %s",config.__dict__)
+    bert_task(config)
 
