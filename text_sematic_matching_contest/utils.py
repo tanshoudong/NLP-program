@@ -6,6 +6,7 @@ import os
 import time
 import copy
 import torch.nn.functional as F
+from time import strftime, localtime
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset
@@ -16,6 +17,7 @@ import pickle
 from collections import Counter
 from transformers import BertTokenizer
 import logging
+from sklearn.metrics import roc_auc_score
 
 logger = logging.getLogger(__name__)
 
@@ -208,7 +210,7 @@ class Vocab(object):
 
 class BuildDataSet(Dataset):
     def __init__(self,dataset):
-        self.dataset=dataset.to_numpy()
+        self.dataset = dataset.values
         self.tokenizer=BertTokenizer.from_pretrained('vocab')
         self._len = len(self.dataset)
 
@@ -304,8 +306,9 @@ def train_process(config, model, train_iter, dev_iter=None):
     logger.info("  Train device:%s", config.device)
 
     global_batch = 0  # 记录进行到多少batch
-    dev_best_acc = 0
-    last_improve = 0  # 记录上次验证集loss下降的batch数
+    dev_best_auc = 0
+    last_batch_improve = 0  # 记录上次验证集loss下降的batch数
+    last_epoch_improve = 0
     flag = False  # 记录是否很久没有效果提升
 
     predict_all = []
@@ -321,7 +324,6 @@ def train_process(config, model, train_iter, dev_iter=None):
             input_ids = input_ids.to(config.device)
             token_type_ids = token_type_ids.to(config.device)
             attention_mask = attention_mask.to(config.device)
-
             labels = label.to(config.device)
             outputs,loss = model(input_ids,token_type_ids,attention_mask,labels)
 
@@ -331,11 +333,66 @@ def train_process(config, model, train_iter, dev_iter=None):
             scheduler.step()  # Update learning rate schedule
 
             outputs = outputs.cpu().detach().numpy()
-            predic = list(np.array(outputs >= config.prob_threshold, dtype='int'))
-            labels_all.extend(labels)
-            predict_all.extend(predic)
+            labels_all.extend(labels.cpu().detach().numpy())
+            predict_all.extend(outputs)
+
+            if global_batch % 100 == 0:
+                train_auc = roc_auc_score(labels_all,predict_all)
+                labels_all,predict_all = [],[]
+
+                # dev 数据
+                dev_auc,dev_loss = 0,0
+                improve = ''
+                if dev_iter is not None:
+                    dev_auc,dev_loss = model_evaluate(config,model,dev_iter)
+
+                    if dev_auc > dev_best_auc:
+                        dev_best_acc = dev_acc
+                        last_batch_improve = global_batch
+                        last_epoch_improve = epoch
+                        best_model = copy.deepcopy(model)
+
+                msg = 'Epoch:{},Iter:{}/{},Train_loss:{},Train_auc:{},Dev_loss:{},Dev_auc:{},Time:{}'
+                now = strftime("%Y-%m-%d %H:%M:%S", localtime())
+                logging.info(msg.format(epoch,global_batch,t_total,loss.cpu().data.item(),
+                                        train_auc,dev_loss.cpu().data.item(),dev_auc,now))
+    return best_model
 
 
 
 
+
+
+
+
+
+def model_evaluate(config,model,dev_iter):
+    model.eval()
+    loss_total = 0
+    predict_all = []
+    labels_all = []
+    total_inputs_error = []
+
+    with torch.no_grad():
+        for batch,(input_ids,token_type_ids,attention_mask,label) in enumerate(data_iter):
+            input_ids = input_ids.to(config.device)
+            token_type_ids = token_type_ids.to(config.device)
+            attention_mask = attention_mask.to(config.device)
+            labels = label.to(config.device)
+            outputs,loss = model(input_ids, token_type_ids, attention_mask, labels)
+            loss_total = loss_total+loss
+            predict_all.extend(outputs.cpu().detach().numpy())
+            labels_all.extend(labels.cpu().detach().numpy())
+    dev_auc = roc_auc_score(labels_all,predict_all)
+    return dev_auc,loss_total/len(dev_iter)
+
+def model_save(config, model, num=0, name=None):
+    if not os.path.exists(config.save_path[num]):
+        os.makedirs(config.save_path[num])
+    if name is not None:
+        file_name = os.path.join(config.save_path[num], name + '.pkl')
+    else:
+        file_name = os.path.join(config.save_path[num], config.save_file[num]+'.pkl')
+    torch.save(model.state_dict(), file_name)
+    logger.info("model saved, path: %s", file_name)
 

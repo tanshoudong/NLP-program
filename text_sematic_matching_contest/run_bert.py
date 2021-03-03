@@ -4,7 +4,8 @@ import logging
 import torch
 import time
 from torch.utils.data import DataLoader
-from utils import set_seed,DataProcessor,train_vector,Vocab,BuildDataSet,collate_fn,train_process
+from utils import set_seed,DataProcessor,train_vector,\
+    Vocab,BuildDataSet,collate_fn,train_process,model_save
 from models import Bert
 
 
@@ -79,7 +80,10 @@ def bert_task(config):
     config.vocab_size = train_dataset.tokenizer.vocab_size + 5
     model = Bert(config).to(config.device)
 
-    train_process(config, model, train_iter = train_load, dev_iter = dev_load)
+    model_example = train_process(config, model, train_iter = train_load, dev_iter = dev_load)
+
+    model_save(config, model_example)
+
 
 
 
