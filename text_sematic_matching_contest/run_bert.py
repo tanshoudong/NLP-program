@@ -4,7 +4,7 @@ import logging
 import torch
 import time
 from torch.utils.data import DataLoader
-from utils import set_seed,DataProcessor,train_vector,Vocab,BuildDataSet,collate_fn
+from utils import set_seed,DataProcessor,train_vector,Vocab,BuildDataSet,collate_fn,train_process
 from models import Bert
 
 
@@ -28,7 +28,7 @@ class Bert_Config:
         self.hidden_size = [768]
         self.early_stop = False
         self.require_improvement = 500
-        self.num_train_epochs = 5                  # epoch数
+        self.num_train_epochs = 8                  # epoch数
         self.batch_size = 64                       # mini-batch大小
         self.learning_rate = 2e-5                  # 学习率
         self.head_learning_rate = 1e-3             # 后面的分类层的学习率
@@ -77,16 +77,9 @@ def bert_task(config):
     dev_load = DataLoader(dataset=dev_dataset,batch_size=config.batch_size,
                         shuffle=True,collate_fn=collate_fn)
     config.vocab_size = train_dataset.tokenizer.vocab_size + 5
-    model = Bert(config)
-    
+    model = Bert(config).to(config.device)
 
-
-    for batch,(input_ids, token_type_ids, attention_mask, label) in enumerate(train_load):
-        print(batch)
-
-
-
-
+    train_process(config, model, train_iter = train_load, dev_iter = dev_load)
 
 
 

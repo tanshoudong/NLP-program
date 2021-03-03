@@ -3,15 +3,33 @@ import random
 import numpy as np
 import csv
 import os
+import time
+import copy
+import torch.nn.functional as F
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Dataset
 from gensim.models import Word2Vec
+from transformers import AdamW, get_linear_schedule_with_warmup
 from tqdm import tqdm
 import pickle
 from collections import Counter
 from transformers import BertTokenizer
+import logging
 
+logger = logging.getLogger(__name__)
+
+
+def compute_loss(outputs, labels, loss_method='binary'):
+    loss = 0.
+    if loss_method == 'binary':
+        labels = labels.unsqueeze(1)
+        loss = F.binary_cross_entropy(torch.sigmoid(outputs), labels)
+    elif loss_method == 'cross_entropy':
+        loss = F.cross_entropy(outputs, labels)
+    else:
+        raise Exception("loss_method {binary or cross_entropy} error. ")
+    return loss
 
 
 def set_seed(args):
@@ -221,6 +239,102 @@ def collate_fn(batch_data,padding_token=0,pad_token_segment_id=0):
     attention_mask = torch.tensor(data=attention_mask).type(torch.LongTensor)
     label = torch.tensor(data=label).type(torch.FloatTensor)
     return input_ids, token_type_ids, attention_mask, label
+
+
+def train_process(config, model, train_iter, dev_iter=None):
+    start_time = time.time()
+    # Prepare optimizer and schedule (linear warmup and decay)
+    no_decay = ["bias", "LayerNorm.weight"]
+    diff_part = ["bert.embeddings", "bert.encoder"]
+
+    if config.diff_learning_rate is False:
+        optimizer_grouped_parameters = [
+            {
+                "params": [p for n, p in model.named_parameters() if not any(nd in n for nd in no_decay)],
+                "weight_decay": config.weight_decay,
+            },
+            {
+                "params": [p for n, p in model.named_parameters() if any(nd in n for nd in no_decay)],
+                "weight_decay": 0.0
+            },
+        ]
+        optimizer = AdamW(optimizer_grouped_parameters, lr=config.learning_rate)
+    else:
+        logger.info("use the diff learning rate")
+        # the formal is basic_bert part, not include the pooler
+        optimizer_grouped_parameters = [
+            {
+                "params": [p for n, p in model.named_parameters() if
+                           not any(nd in n for nd in no_decay) and any(nd in n for nd in diff_part)],
+                "weight_decay": config.weight_decay,
+                "lr": config.learning_rate
+            },
+            {
+                "params": [p for n, p in model.named_parameters() if
+                           any(nd in n for nd in no_decay) and any(nd in n for nd in diff_part)],
+                "weight_decay": 0.0,
+                "lr": config.learning_rate
+            },
+            {
+                "params": [p for n, p in model.named_parameters() if
+                           not any(nd in n for nd in no_decay) and not any(nd in n for nd in diff_part)],
+                "weight_decay": config.weight_decay,
+                "lr": config.head_learning_rate
+            },
+            {
+                "params": [p for n, p in model.named_parameters() if
+                           any(nd in n for nd in no_decay) and not any(nd in n for nd in diff_part)],
+                "weight_decay": 0.0,
+                "lr": config.head_learning_rate
+            },
+        ]
+        optimizer = AdamW(optimizer_grouped_parameters)
+
+    t_total = len(train_iter) * config.num_train_epochs
+    scheduler = get_linear_schedule_with_warmup(
+        optimizer, num_warmup_steps=t_total * config.warmup_proportion, num_training_steps=t_total
+    )
+
+    logger.info("***** Running training *****")
+    logger.info("  Train Num examples = %d", config.train_num_examples)
+    logger.info("  Dev Num examples = %d", config.dev_num_examples)
+    logger.info("  Num Epochs = %d", config.num_train_epochs)
+    logger.info("  Instantaneous batch size GPU/CPU = %d", config.batch_size)
+    logger.info("  Total optimization steps = %d", t_total)
+    logger.info("  Train device:%s", config.device)
+
+    global_batch = 0  # 记录进行到多少batch
+    dev_best_acc = 0
+    last_improve = 0  # 记录上次验证集loss下降的batch数
+    flag = False  # 记录是否很久没有效果提升
+
+    predict_all = []
+    labels_all = []
+    best_model = copy.deepcopy(model)
+
+    for epoch in range(config.num_train_epochs):
+        logger.info('Epoch [{}/{}]'.format(epoch + 1, config.num_train_epochs))
+
+        for batch, (input_ids, token_type_ids, attention_mask, label) in enumerate(train_iter):
+            global_batch += 1
+            model.train()
+            input_ids = input_ids.to(config.device)
+            token_type_ids = token_type_ids.to(config.device)
+            attention_mask = attention_mask.to(config.device)
+
+            labels = label.to(config.device)
+            outputs,loss = model(input_ids,token_type_ids,attention_mask,labels)
+
+            model.zero_grad()
+            loss.backward()
+            optimizer.step()
+            scheduler.step()  # Update learning rate schedule
+
+            outputs = outputs.cpu().detach().numpy()
+            predic = list(np.array(outputs >= config.prob_threshold, dtype='int'))
+            labels_all.extend(labels)
+            predict_all.extend(predic)
+
 
 
 
