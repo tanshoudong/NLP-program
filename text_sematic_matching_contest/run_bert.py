@@ -29,8 +29,8 @@ class Bert_Config:
         self.hidden_size = [768]
         self.early_stop = False
         self.require_improvement = 500
-        self.num_train_epochs = 8                  # epoch数
-        self.batch_size = 64                       # mini-batch大小
+        self.num_train_epochs = 10                  # epoch数
+        self.batch_size = 128                       # mini-batch大小
         self.learning_rate = 2e-5                  # 学习率
         self.head_learning_rate = 1e-3             # 后面的分类层的学习率
         self.weight_decay = 0.01                   # 权重衰减因子
@@ -57,6 +57,7 @@ class Bert_Config:
         self.out_prob = True
         self.n_gpu = torch.cuda.device_count()
         self.vocab_size = None
+        self.data_enhance = True
 
 def bert_task(config):
     processor = DataProcessor(config)
@@ -86,12 +87,13 @@ def bert_task(config):
     config.vocab_size = train_dataset.tokenizer.vocab_size + 5
     model = Bert(config).to(config.device)
 
-    model_example = train_process(config, model, train_iter = train_load, dev_iter = dev_load)
+    model_example,last_epoch_improve = train_process(config, model, train_iter = train_load, dev_iter = dev_load)
 
     model_save(config, model_example)
 
     predict_result = model_evaluate(config, model_example, test_load,test=True)
     submit_result(predict_result)
+    print("best epoch:{}".format(last_epoch_improve))
 
 
 

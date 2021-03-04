@@ -46,6 +46,7 @@ def set_seed(args):
 class DataProcessor:
     def __init__(self, config):
         self.data_dir = config.data_dir
+        self.config=config
 
     def get_labels(self):
         """See base class."""
@@ -66,6 +67,10 @@ class DataProcessor:
     def train_dev_split(self,data):
         df=pd.DataFrame(data,columns=['text_left','text_right',"label"])
         train,valid=train_test_split(df,test_size=0.05, stratify=df['label'])
+        if self.config.data_enhance:
+            tmp = pd.DataFrame()
+            tmp["text_left"], tmp["text_right"], tmp["label"] = train["text_right"], train["text_left"], train["label"]
+            train = pd.concat([train,tmp])
         return train,valid
 
     def get_test_data(self,test_dir):
@@ -278,13 +283,12 @@ def train_process(config, model, train_iter, dev_iter=None):
 
     global_batch = 0  # 记录进行到多少batch
     dev_best_auc = 0
-    last_batch_improve = 0  # 记录上次验证集loss下降的batch数
-    last_epoch_improve = 0
-    flag = False  # 记录是否很久没有效果提升
-
     predict_all = []
     labels_all = []
     best_model = copy.deepcopy(model)
+
+    if config.n_gpu>1:
+        model = torch.nn.DataParallel(model)
 
     for epoch in range(config.num_train_epochs):
         logger.info('Epoch [{}/{}]'.format(epoch + 1, config.num_train_epochs))
@@ -297,6 +301,8 @@ def train_process(config, model, train_iter, dev_iter=None):
             attention_mask = attention_mask.to(config.device)
             labels = label.to(config.device)
             outputs,loss = model(input_ids,token_type_ids,attention_mask,labels)
+            if config.n_gpu > 1:
+                loss = loss.mean()
 
             model.zero_grad()
             loss.backward()
@@ -313,12 +319,11 @@ def train_process(config, model, train_iter, dev_iter=None):
 
                 # dev 数据
                 dev_auc,dev_loss = 0,0
-                improve = ''
                 if dev_iter is not None:
                     dev_auc,dev_loss = model_evaluate(config,model,dev_iter)
 
                     if dev_auc > dev_best_auc:
-                        dev_best_acc = dev_acc
+                        dev_best_auc = dev_auc
                         last_batch_improve = global_batch
                         last_epoch_improve = epoch
                         best_model = copy.deepcopy(model)
@@ -327,7 +332,7 @@ def train_process(config, model, train_iter, dev_iter=None):
                 now = strftime("%Y-%m-%d %H:%M:%S", localtime())
                 logging.info(msg.format(epoch,global_batch,t_total,loss.cpu().data.item(),
                                         train_auc,dev_loss.cpu().data.item(),dev_auc,now))
-    return best_model
+    return best_model ,last_epoch_improve
 
 
 
@@ -345,13 +350,17 @@ def model_evaluate(config,model,data_iter,test=False):
             attention_mask = attention_mask.to(config.device)
             labels = label.to(config.device)
             outputs,loss = model(input_ids, token_type_ids, attention_mask, labels)
+            if config.n_gpu > 1:
+                loss = loss.mean()
             loss_total = loss_total+loss
             predict_all.extend(outputs.cpu().detach().numpy())
             labels_all.extend(labels.cpu().detach().numpy())
-    dev_auc = roc_auc_score(labels_all,predict_all)
+
+
     if test:
         return predict_all
     else:
+        dev_auc = roc_auc_score(labels_all, predict_all)
         return dev_auc, loss_total/len(data_iter)
 
 
@@ -366,13 +375,10 @@ def model_save(config, model, num=0, name=None):
     logger.info("model saved, path: %s", file_name)
 
 
-
 def submit_result(ls):
     with open(file='result.tsv',mode="w",encoding="utf-8") as f:
         for line in ls:
-            f.write(line)
-            f.write('\n')
-
+            f.write(str(line)+'\n')
 
 
 
