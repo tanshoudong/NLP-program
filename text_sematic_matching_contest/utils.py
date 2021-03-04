@@ -183,6 +183,17 @@ class Vocab(object):
                 f.write(word+'\n')
             f.write('[UNK]')
 
+    def collate_fn_v1(self,batch_data):
+
+        max_len = max([len(x[0]) for x in batch_data])
+        max_len = max([])
+        input_ids, token_type_ids, attention_mask, label = [], [], [], []
+        for x, y, z, w in batch_data:
+            input_ids.append(x + (max_len - len(x)) * [padding_token])
+            token_type_ids.append(y + (max_len - len(y)) * [pad_token_segment_id])
+            attention_mask.append(z + (max_len - len(z)) * [0])
+            label.append(int(w))
+
 
 class BuildDataSet(Dataset):
     def __init__(self,dataset):
@@ -203,6 +214,27 @@ class BuildDataSet(Dataset):
         return self._len
 
 
+class BuildDataSet_v1(Dataset):
+    def __init__(self,dataset,vocab):
+        self.dataset = dataset.values
+        self.vocab = vocab
+        self._len = len(self.dataset)
+
+    def __getitem__(self, index):
+        example=self.dataset[index]
+        text_a=example[0].strip().split(" ")
+        text_b=example[1].strip().split(" ")
+        label=example[2]
+        text_a = [self.vocab[x] for x in text_a]
+        text_b = [self.vocab[x] for x in text_b]
+
+        return text_a,text_b,label
+
+    def __len__(self):
+        return self._len
+
+
+
 def collate_fn(batch_data,padding_token=0,pad_token_segment_id=0):
     max_len=max([len(x[0]) for x in batch_data])
     input_ids, token_type_ids, attention_mask, label=[],[],[],[]
@@ -217,6 +249,12 @@ def collate_fn(batch_data,padding_token=0,pad_token_segment_id=0):
     attention_mask = torch.tensor(data=attention_mask).type(torch.LongTensor)
     label = torch.tensor(data=label).type(torch.FloatTensor)
     return input_ids, token_type_ids, attention_mask, label
+
+
+
+
+
+
 
 
 def train_process(config, model, train_iter, dev_iter=None):
