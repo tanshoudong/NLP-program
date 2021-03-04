@@ -5,7 +5,7 @@ import torch
 import time
 from torch.utils.data import DataLoader
 from utils import set_seed,DataProcessor,train_vector,\
-    Vocab,BuildDataSet,collate_fn,train_process,model_save
+    Vocab,BuildDataSet,collate_fn,train_process,model_save,model_evaluate,submit_result
 from models import Bert
 
 
@@ -71,12 +71,18 @@ def bert_task(config):
     vocab.add_words(train_ebeding.get_all_exampes_words())
     vocab.build_bert_vocab()
 
+    test = processor.get_test_data(train_ebeding.data_dir[0])
+
     train_dataset = BuildDataSet(train)
     train_load = DataLoader(dataset=train_dataset,batch_size=config.batch_size,
                             shuffle=True,collate_fn=collate_fn)
     dev_dataset = BuildDataSet(dev)
     dev_load = DataLoader(dataset=dev_dataset,batch_size=config.batch_size,
                         shuffle=True,collate_fn=collate_fn)
+    test_dataset = BuildDataSet(test)
+    test_load = DataLoader(dataset=test_dataset,batch_size=config.batch_size,
+                           shuffle=False,collate_fn=collate_fn)
+
     config.vocab_size = train_dataset.tokenizer.vocab_size + 5
     model = Bert(config).to(config.device)
 
@@ -84,6 +90,8 @@ def bert_task(config):
 
     model_save(config, model_example)
 
+    predict_result = model_evaluate(config, model_example, test_load,test=True)
+    submit_result(predict_result)
 
 
 

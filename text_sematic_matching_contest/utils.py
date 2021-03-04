@@ -41,41 +41,6 @@ def set_seed(args):
     if args.n_gpu > 0:
         torch.cuda.manual_seed_all(args.seed)
 
-def convert_examples_to_features(examples,label_list,pad_token=0,pad_token_segment_id=0):
-    """
-    :param examples: List [ sentences1,sentences2,label, category]
-    :param tokenizer: Instance of a tokenizer that will tokenize the examples
-    :param label_list: List of labels.
-    :param max_length: Maximum example length
-    :param pad_token: 0
-    :param pad_token_segment_id: 0
-    :return: [(example.guid, input_ids, attention_mask, token_type_ids, label), ......]
-    """
-    label_map = {label: i for i, label in enumerate(label_list)}
-
-    features = []
-    for (index, example) in enumerate(examples):
-        inputs = tokenizer.encode_plus(example[0], example[1], add_special_tokens=True, max_length=max_length)
-        input_ids, token_type_ids = inputs["input_ids"], inputs["token_type_ids"]
-        attention_mask = [1] * len(input_ids)
-
-        # Zero-pad up to the sequence length.
-        padding_length = max_length - len(input_ids)
-
-        input_ids = input_ids + ([pad_token] * padding_length)
-        attention_mask = attention_mask + ([0] * padding_length)
-        token_type_ids = token_type_ids + ([pad_token_segment_id] * padding_length)
-
-        if example[2] is not None:
-            label = label_map[example[2]]
-        else:
-            label = 0
-        features.append(
-            InputFeatures(input_ids, attention_mask, token_type_ids, label)
-        )
-
-    return features
-
 
 
 class DataProcessor:
@@ -102,6 +67,12 @@ class DataProcessor:
         df=pd.DataFrame(data,columns=['text_left','text_right',"label"])
         train,valid=train_test_split(df,test_size=0.05, stratify=df['label'])
         return train,valid
+
+    def get_test_data(self,test_dir):
+        test = pd.read_csv(test_dir,sep='\t',names=['text_left','text_right'])
+        test["label"]=2
+        return test
+
 
 
 class train_vector:
@@ -360,18 +331,12 @@ def train_process(config, model, train_iter, dev_iter=None):
 
 
 
-
-
-
-
-
-
-def model_evaluate(config,model,dev_iter):
+def model_evaluate(config,model,data_iter,test=False):
     model.eval()
     loss_total = 0
     predict_all = []
     labels_all = []
-    total_inputs_error = []
+    # total_inputs_error = []
 
     with torch.no_grad():
         for batch,(input_ids,token_type_ids,attention_mask,label) in enumerate(data_iter):
@@ -384,7 +349,11 @@ def model_evaluate(config,model,dev_iter):
             predict_all.extend(outputs.cpu().detach().numpy())
             labels_all.extend(labels.cpu().detach().numpy())
     dev_auc = roc_auc_score(labels_all,predict_all)
-    return dev_auc,loss_total/len(dev_iter)
+    if test:
+        return predict_all
+    else:
+        return dev_auc, loss_total/len(data_iter)
+
 
 def model_save(config, model, num=0, name=None):
     if not os.path.exists(config.save_path[num]):
@@ -395,4 +364,15 @@ def model_save(config, model, num=0, name=None):
         file_name = os.path.join(config.save_path[num], config.save_file[num]+'.pkl')
     torch.save(model.state_dict(), file_name)
     logger.info("model saved, path: %s", file_name)
+
+
+
+def submit_result(ls):
+    with open(file='result.tsv',mode="w",encoding="utf-8") as f:
+        for line in ls:
+            f.write(line)
+            f.write('\n')
+
+
+
 
