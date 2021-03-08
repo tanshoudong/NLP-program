@@ -1,0 +1,400 @@
+INFO: config {'data_dir': 'D:\\NLP-program\\text_sematic_matching_contest\\data\\Preliminary\\gaiic_track3_round1_train_20210228.tsv', 'task': 'TianChi', 'embed_dir': 'D:\\NLP-program\\text_sematic_matching_contest\\data\\vector', 'models_name': 'roberta', 'device': device(type='cpu'), 'requires_grad': True, 'class_list': [], 'num_labels': 2, 'train_num_examples': 0, 'dev_num_examples': 0, 'test_num_examples': 0, 'hidden_dropout_prob': 0.1, 'hidden_size': [512], 'num_train_epochs': 8, 'batch_size': 128, 'learning_rate': 2e-05, 'head_learning_rate': 0.001, 'weight_decay': 0.01, 'warmup_proportion': 0.1, 'k_fold': 5, 'multi_drop': 5, 'is_logging2file': True, 'logging_dir': 'D:\\NLP-program\\text_sematic_matching_contest\\data\\log\\roberta', 'load_save_model': False, 'save_path': ['D:\\NLP-program\\text_sematic_matching_contest\\data\\model_data'], 'save_file': ['roberta'], 'seed': 12345, 'loss_method': 'binary', 'diff_learning_rate': False, 'pattern': 'full_train', 'stop_word_valid': True, 'out_prob': True, 'n_gpu': 0, 'vocab_size': None, 'data_enhance': True, 'embeding_size': 128, 'max_grad_norm': 1}
+INFO: collecting all words and their counts
+INFO: PROGRESS: at sentence #0, processed 0 words, keeping 0 word types
+INFO: PROGRESS: at sentence #10000, processed 134372 words, keeping 4285 word types
+INFO: PROGRESS: at sentence #20000, processed 269442 words, keeping 6037 word types
+INFO: PROGRESS: at sentence #30000, processed 404232 words, keeping 7409 word types
+INFO: PROGRESS: at sentence #40000, processed 539034 words, keeping 8448 word types
+INFO: PROGRESS: at sentence #50000, processed 673952 words, keeping 9323 word types
+INFO: PROGRESS: at sentence #60000, processed 813640 words, keeping 10368 word types
+INFO: PROGRESS: at sentence #70000, processed 953598 words, keeping 11242 word types
+INFO: PROGRESS: at sentence #80000, processed 1093746 words, keeping 12033 word types
+INFO: PROGRESS: at sentence #90000, processed 1233064 words, keeping 12790 word types
+INFO: PROGRESS: at sentence #100000, processed 1372166 words, keeping 13466 word types
+INFO: PROGRESS: at sentence #110000, processed 1510628 words, keeping 14125 word types
+INFO: PROGRESS: at sentence #120000, processed 1650414 words, keeping 14778 word types
+INFO: PROGRESS: at sentence #130000, processed 1789730 words, keeping 15373 word types
+INFO: PROGRESS: at sentence #140000, processed 1929452 words, keeping 15883 word types
+INFO: PROGRESS: at sentence #150000, processed 2069518 words, keeping 16396 word types
+INFO: PROGRESS: at sentence #160000, processed 2209194 words, keeping 16864 word types
+INFO: PROGRESS: at sentence #170000, processed 2349062 words, keeping 17322 word types
+INFO: PROGRESS: at sentence #180000, processed 2488154 words, keeping 17722 word types
+INFO: PROGRESS: at sentence #190000, processed 2627254 words, keeping 18177 word types
+INFO: PROGRESS: at sentence #200000, processed 2766146 words, keeping 18576 word types
+INFO: PROGRESS: at sentence #210000, processed 2905504 words, keeping 19012 word types
+INFO: PROGRESS: at sentence #220000, processed 3045532 words, keeping 19420 word types
+INFO: PROGRESS: at sentence #230000, processed 3186184 words, keeping 19842 word types
+INFO: PROGRESS: at sentence #240000, processed 3325444 words, keeping 20221 word types
+INFO: collected 20601 word types from a corpus of 3464634 raw words and 250000 sentences
+INFO: Loading a fresh vocabulary
+INFO: effective_min_count=1 retains 20601 unique words (100% of original 20601, drops 0)
+INFO: effective_min_count=1 leaves 3464634 word corpus (100% of original 3464634, drops 0)
+INFO: deleting the raw counts dictionary of 20601 items
+INFO: sample=0.001 downsamples 57 most-common words
+INFO: downsampling leaves estimated 2440503 word corpus (70.4% of prior 3464634)
+INFO: estimated required memory for 20601 words and 128 dimensions: 31395924 bytes
+INFO: resetting layer weights
+INFO: training model with 32 workers on 20601 vocabulary and 128 features, using sg=1 hs=0 sample=0.001 negative=5 window=4
+INFO: EPOCH 1 - PROGRESS: at 22.15% examples, 516850 words/s, in_qsize 63, out_qsize 0
+INFO: EPOCH 1 - PROGRESS: at 51.97% examples, 625445 words/s, in_qsize 60, out_qsize 0
+INFO: EPOCH 1 - PROGRESS: at 86.07% examples, 690746 words/s, in_qsize 49, out_qsize 0
+INFO: worker thread finished; awaiting finish of 31 more threads
+INFO: worker thread finished; awaiting finish of 30 more threads
+INFO: worker thread finished; awaiting finish of 29 more threads
+INFO: worker thread finished; awaiting finish of 28 more threads
+INFO: worker thread finished; awaiting finish of 27 more threads
+INFO: worker thread finished; awaiting finish of 26 more threads
+INFO: worker thread finished; awaiting finish of 25 more threads
+INFO: worker thread finished; awaiting finish of 24 more threads
+INFO: worker thread finished; awaiting finish of 23 more threads
+INFO: worker thread finished; awaiting finish of 22 more threads
+INFO: worker thread finished; awaiting finish of 21 more threads
+INFO: worker thread finished; awaiting finish of 20 more threads
+INFO: worker thread finished; awaiting finish of 19 more threads
+INFO: worker thread finished; awaiting finish of 18 more threads
+INFO: worker thread finished; awaiting finish of 17 more threads
+INFO: worker thread finished; awaiting finish of 16 more threads
+INFO: worker thread finished; awaiting finish of 15 more threads
+INFO: worker thread finished; awaiting finish of 14 more threads
+INFO: worker thread finished; awaiting finish of 13 more threads
+INFO: worker thread finished; awaiting finish of 12 more threads
+INFO: worker thread finished; awaiting finish of 11 more threads
+INFO: worker thread finished; awaiting finish of 10 more threads
+INFO: worker thread finished; awaiting finish of 9 more threads
+INFO: worker thread finished; awaiting finish of 8 more threads
+INFO: worker thread finished; awaiting finish of 7 more threads
+INFO: worker thread finished; awaiting finish of 6 more threads
+INFO: worker thread finished; awaiting finish of 5 more threads
+INFO: worker thread finished; awaiting finish of 4 more threads
+INFO: worker thread finished; awaiting finish of 3 more threads
+INFO: worker thread finished; awaiting finish of 2 more threads
+INFO: worker thread finished; awaiting finish of 1 more threads
+INFO: worker thread finished; awaiting finish of 0 more threads
+INFO: EPOCH - 1 : training on 3464634 raw words (2441301 effective words) took 3.4s, 726631 effective words/s
+INFO: EPOCH 2 - PROGRESS: at 23.02% examples, 525329 words/s, in_qsize 62, out_qsize 1
+INFO: EPOCH 2 - PROGRESS: at 55.40% examples, 649431 words/s, in_qsize 63, out_qsize 0
+INFO: EPOCH 2 - PROGRESS: at 84.93% examples, 668275 words/s, in_qsize 52, out_qsize 1
+INFO: worker thread finished; awaiting finish of 31 more threads
+INFO: worker thread finished; awaiting finish of 30 more threads
+INFO: worker thread finished; awaiting finish of 29 more threads
+INFO: worker thread finished; awaiting finish of 28 more threads
+INFO: worker thread finished; awaiting finish of 27 more threads
+INFO: worker thread finished; awaiting finish of 26 more threads
+INFO: worker thread finished; awaiting finish of 25 more threads
+INFO: worker thread finished; awaiting finish of 24 more threads
+INFO: worker thread finished; awaiting finish of 23 more threads
+INFO: worker thread finished; awaiting finish of 22 more threads
+INFO: worker thread finished; awaiting finish of 21 more threads
+INFO: worker thread finished; awaiting finish of 20 more threads
+INFO: worker thread finished; awaiting finish of 19 more threads
+INFO: worker thread finished; awaiting finish of 18 more threads
+INFO: worker thread finished; awaiting finish of 17 more threads
+INFO: worker thread finished; awaiting finish of 16 more threads
+INFO: worker thread finished; awaiting finish of 15 more threads
+INFO: worker thread finished; awaiting finish of 14 more threads
+INFO: worker thread finished; awaiting finish of 13 more threads
+INFO: worker thread finished; awaiting finish of 12 more threads
+INFO: worker thread finished; awaiting finish of 11 more threads
+INFO: worker thread finished; awaiting finish of 10 more threads
+INFO: worker thread finished; awaiting finish of 9 more threads
+INFO: worker thread finished; awaiting finish of 8 more threads
+INFO: worker thread finished; awaiting finish of 7 more threads
+INFO: worker thread finished; awaiting finish of 6 more threads
+INFO: worker thread finished; awaiting finish of 5 more threads
+INFO: worker thread finished; awaiting finish of 4 more threads
+INFO: worker thread finished; awaiting finish of 3 more threads
+INFO: worker thread finished; awaiting finish of 2 more threads
+INFO: worker thread finished; awaiting finish of 1 more threads
+INFO: worker thread finished; awaiting finish of 0 more threads
+INFO: EPOCH - 2 : training on 3464634 raw words (2440714 effective words) took 3.4s, 717984 effective words/s
+INFO: EPOCH 3 - PROGRESS: at 22.16% examples, 489853 words/s, in_qsize 63, out_qsize 0
+INFO: EPOCH 3 - PROGRESS: at 52.54% examples, 606074 words/s, in_qsize 62, out_qsize 1
+INFO: EPOCH 3 - PROGRESS: at 76.31% examples, 596081 words/s, in_qsize 60, out_qsize 3
+INFO: worker thread finished; awaiting finish of 31 more threads
+INFO: worker thread finished; awaiting finish of 30 more threads
+INFO: worker thread finished; awaiting finish of 29 more threads
+INFO: worker thread finished; awaiting finish of 28 more threads
+INFO: worker thread finished; awaiting finish of 27 more threads
+INFO: worker thread finished; awaiting finish of 26 more threads
+INFO: worker thread finished; awaiting finish of 25 more threads
+INFO: worker thread finished; awaiting finish of 24 more threads
+INFO: worker thread finished; awaiting finish of 23 more threads
+INFO: worker thread finished; awaiting finish of 22 more threads
+INFO: worker thread finished; awaiting finish of 21 more threads
+INFO: worker thread finished; awaiting finish of 20 more threads
+INFO: worker thread finished; awaiting finish of 19 more threads
+INFO: worker thread finished; awaiting finish of 18 more threads
+INFO: worker thread finished; awaiting finish of 17 more threads
+INFO: worker thread finished; awaiting finish of 16 more threads
+INFO: worker thread finished; awaiting finish of 15 more threads
+INFO: worker thread finished; awaiting finish of 14 more threads
+INFO: worker thread finished; awaiting finish of 13 more threads
+INFO: worker thread finished; awaiting finish of 12 more threads
+INFO: worker thread finished; awaiting finish of 11 more threads
+INFO: worker thread finished; awaiting finish of 10 more threads
+INFO: worker thread finished; awaiting finish of 9 more threads
+INFO: worker thread finished; awaiting finish of 8 more threads
+INFO: worker thread finished; awaiting finish of 7 more threads
+INFO: worker thread finished; awaiting finish of 6 more threads
+INFO: worker thread finished; awaiting finish of 5 more threads
+INFO: worker thread finished; awaiting finish of 4 more threads
+INFO: worker thread finished; awaiting finish of 3 more threads
+INFO: worker thread finished; awaiting finish of 2 more threads
+INFO: worker thread finished; awaiting finish of 1 more threads
+INFO: worker thread finished; awaiting finish of 0 more threads
+INFO: EPOCH - 3 : training on 3464634 raw words (2441322 effective words) took 3.6s, 669649 effective words/s
+INFO: EPOCH 4 - PROGRESS: at 21.29% examples, 488044 words/s, in_qsize 62, out_qsize 1
+INFO: EPOCH 4 - PROGRESS: at 49.11% examples, 584533 words/s, in_qsize 63, out_qsize 0
+INFO: EPOCH 4 - PROGRESS: at 78.35% examples, 628744 words/s, in_qsize 62, out_qsize 1
+INFO: worker thread finished; awaiting finish of 31 more threads
+INFO: worker thread finished; awaiting finish of 30 more threads
+INFO: worker thread finished; awaiting finish of 29 more threads
+INFO: worker thread finished; awaiting finish of 28 more threads
+INFO: worker thread finished; awaiting finish of 27 more threads
+INFO: worker thread finished; awaiting finish of 26 more threads
+INFO: worker thread finished; awaiting finish of 25 more threads
+INFO: worker thread finished; awaiting finish of 24 more threads
+INFO: worker thread finished; awaiting finish of 23 more threads
+INFO: worker thread finished; awaiting finish of 22 more threads
+INFO: worker thread finished; awaiting finish of 21 more threads
+INFO: worker thread finished; awaiting finish of 20 more threads
+INFO: worker thread finished; awaiting finish of 19 more threads
+INFO: worker thread finished; awaiting finish of 18 more threads
+INFO: worker thread finished; awaiting finish of 17 more threads
+INFO: worker thread finished; awaiting finish of 16 more threads
+INFO: worker thread finished; awaiting finish of 15 more threads
+INFO: worker thread finished; awaiting finish of 14 more threads
+INFO: worker thread finished; awaiting finish of 13 more threads
+INFO: worker thread finished; awaiting finish of 12 more threads
+INFO: worker thread finished; awaiting finish of 11 more threads
+INFO: worker thread finished; awaiting finish of 10 more threads
+INFO: worker thread finished; awaiting finish of 9 more threads
+INFO: worker thread finished; awaiting finish of 8 more threads
+INFO: worker thread finished; awaiting finish of 7 more threads
+INFO: worker thread finished; awaiting finish of 6 more threads
+INFO: worker thread finished; awaiting finish of 5 more threads
+INFO: worker thread finished; awaiting finish of 4 more threads
+INFO: worker thread finished; awaiting finish of 3 more threads
+INFO: worker thread finished; awaiting finish of 2 more threads
+INFO: worker thread finished; awaiting finish of 1 more threads
+INFO: worker thread finished; awaiting finish of 0 more threads
+INFO: EPOCH - 4 : training on 3464634 raw words (2438967 effective words) took 3.6s, 679499 effective words/s
+INFO: EPOCH 5 - PROGRESS: at 21.02% examples, 484555 words/s, in_qsize 62, out_qsize 1
+INFO: EPOCH 5 - PROGRESS: at 48.82% examples, 583863 words/s, in_qsize 62, out_qsize 1
+INFO: EPOCH 5 - PROGRESS: at 76.32% examples, 612435 words/s, in_qsize 62, out_qsize 6
+INFO: worker thread finished; awaiting finish of 31 more threads
+INFO: worker thread finished; awaiting finish of 30 more threads
+INFO: worker thread finished; awaiting finish of 29 more threads
+INFO: worker thread finished; awaiting finish of 28 more threads
+INFO: worker thread finished; awaiting finish of 27 more threads
+INFO: worker thread finished; awaiting finish of 26 more threads
+INFO: worker thread finished; awaiting finish of 25 more threads
+INFO: worker thread finished; awaiting finish of 24 more threads
+INFO: worker thread finished; awaiting finish of 23 more threads
+INFO: worker thread finished; awaiting finish of 22 more threads
+INFO: worker thread finished; awaiting finish of 21 more threads
+INFO: worker thread finished; awaiting finish of 20 more threads
+INFO: worker thread finished; awaiting finish of 19 more threads
+INFO: worker thread finished; awaiting finish of 18 more threads
+INFO: worker thread finished; awaiting finish of 17 more threads
+INFO: worker thread finished; awaiting finish of 16 more threads
+INFO: worker thread finished; awaiting finish of 15 more threads
+INFO: worker thread finished; awaiting finish of 14 more threads
+INFO: worker thread finished; awaiting finish of 13 more threads
+INFO: worker thread finished; awaiting finish of 12 more threads
+INFO: worker thread finished; awaiting finish of 11 more threads
+INFO: worker thread finished; awaiting finish of 10 more threads
+INFO: worker thread finished; awaiting finish of 9 more threads
+INFO: worker thread finished; awaiting finish of 8 more threads
+INFO: worker thread finished; awaiting finish of 7 more threads
+INFO: worker thread finished; awaiting finish of 6 more threads
+INFO: worker thread finished; awaiting finish of 5 more threads
+INFO: worker thread finished; awaiting finish of 4 more threads
+INFO: worker thread finished; awaiting finish of 3 more threads
+INFO: worker thread finished; awaiting finish of 2 more threads
+INFO: worker thread finished; awaiting finish of 1 more threads
+INFO: worker thread finished; awaiting finish of 0 more threads
+INFO: EPOCH - 5 : training on 3464634 raw words (2440521 effective words) took 3.6s, 668832 effective words/s
+INFO: EPOCH 6 - PROGRESS: at 21.29% examples, 479819 words/s, in_qsize 62, out_qsize 1
+INFO: EPOCH 6 - PROGRESS: at 47.96% examples, 561996 words/s, in_qsize 56, out_qsize 10
+INFO: EPOCH 6 - PROGRESS: at 75.75% examples, 595364 words/s, in_qsize 63, out_qsize 0
+INFO: worker thread finished; awaiting finish of 31 more threads
+INFO: worker thread finished; awaiting finish of 30 more threads
+INFO: worker thread finished; awaiting finish of 29 more threads
+INFO: worker thread finished; awaiting finish of 28 more threads
+INFO: worker thread finished; awaiting finish of 27 more threads
+INFO: worker thread finished; awaiting finish of 26 more threads
+INFO: worker thread finished; awaiting finish of 25 more threads
+INFO: worker thread finished; awaiting finish of 24 more threads
+INFO: worker thread finished; awaiting finish of 23 more threads
+INFO: worker thread finished; awaiting finish of 22 more threads
+INFO: worker thread finished; awaiting finish of 21 more threads
+INFO: worker thread finished; awaiting finish of 20 more threads
+INFO: worker thread finished; awaiting finish of 19 more threads
+INFO: worker thread finished; awaiting finish of 18 more threads
+INFO: worker thread finished; awaiting finish of 17 more threads
+INFO: worker thread finished; awaiting finish of 16 more threads
+INFO: worker thread finished; awaiting finish of 15 more threads
+INFO: worker thread finished; awaiting finish of 14 more threads
+INFO: worker thread finished; awaiting finish of 13 more threads
+INFO: worker thread finished; awaiting finish of 12 more threads
+INFO: worker thread finished; awaiting finish of 11 more threads
+INFO: worker thread finished; awaiting finish of 10 more threads
+INFO: worker thread finished; awaiting finish of 9 more threads
+INFO: worker thread finished; awaiting finish of 8 more threads
+INFO: worker thread finished; awaiting finish of 7 more threads
+INFO: worker thread finished; awaiting finish of 6 more threads
+INFO: worker thread finished; awaiting finish of 5 more threads
+INFO: worker thread finished; awaiting finish of 4 more threads
+INFO: worker thread finished; awaiting finish of 3 more threads
+INFO: worker thread finished; awaiting finish of 2 more threads
+INFO: worker thread finished; awaiting finish of 1 more threads
+INFO: worker thread finished; awaiting finish of 0 more threads
+INFO: EPOCH - 6 : training on 3464634 raw words (2440227 effective words) took 3.7s, 652112 effective words/s
+INFO: EPOCH 7 - PROGRESS: at 20.15% examples, 464823 words/s, in_qsize 63, out_qsize 0
+INFO: EPOCH 7 - PROGRESS: at 48.25% examples, 578522 words/s, in_qsize 59, out_qsize 0
+INFO: EPOCH 7 - PROGRESS: at 70.30% examples, 567431 words/s, in_qsize 63, out_qsize 1
+INFO: worker thread finished; awaiting finish of 31 more threads
+INFO: worker thread finished; awaiting finish of 30 more threads
+INFO: worker thread finished; awaiting finish of 29 more threads
+INFO: worker thread finished; awaiting finish of 28 more threads
+INFO: worker thread finished; awaiting finish of 27 more threads
+INFO: worker thread finished; awaiting finish of 26 more threads
+INFO: worker thread finished; awaiting finish of 25 more threads
+INFO: worker thread finished; awaiting finish of 24 more threads
+INFO: worker thread finished; awaiting finish of 23 more threads
+INFO: worker thread finished; awaiting finish of 22 more threads
+INFO: worker thread finished; awaiting finish of 21 more threads
+INFO: worker thread finished; awaiting finish of 20 more threads
+INFO: worker thread finished; awaiting finish of 19 more threads
+INFO: worker thread finished; awaiting finish of 18 more threads
+INFO: worker thread finished; awaiting finish of 17 more threads
+INFO: worker thread finished; awaiting finish of 16 more threads
+INFO: worker thread finished; awaiting finish of 15 more threads
+INFO: worker thread finished; awaiting finish of 14 more threads
+INFO: worker thread finished; awaiting finish of 13 more threads
+INFO: worker thread finished; awaiting finish of 12 more threads
+INFO: worker thread finished; awaiting finish of 11 more threads
+INFO: worker thread finished; awaiting finish of 10 more threads
+INFO: worker thread finished; awaiting finish of 9 more threads
+INFO: worker thread finished; awaiting finish of 8 more threads
+INFO: worker thread finished; awaiting finish of 7 more threads
+INFO: worker thread finished; awaiting finish of 6 more threads
+INFO: worker thread finished; awaiting finish of 5 more threads
+INFO: worker thread finished; awaiting finish of 4 more threads
+INFO: worker thread finished; awaiting finish of 3 more threads
+INFO: worker thread finished; awaiting finish of 2 more threads
+INFO: worker thread finished; awaiting finish of 1 more threads
+INFO: worker thread finished; awaiting finish of 0 more threads
+INFO: EPOCH - 7 : training on 3464634 raw words (2440640 effective words) took 4.0s, 609453 effective words/s
+INFO: EPOCH 8 - PROGRESS: at 17.21% examples, 372040 words/s, in_qsize 61, out_qsize 6
+INFO: EPOCH 8 - PROGRESS: at 41.94% examples, 482353 words/s, in_qsize 60, out_qsize 3
+INFO: EPOCH 8 - PROGRESS: at 63.42% examples, 496236 words/s, in_qsize 64, out_qsize 0
+INFO: EPOCH 8 - PROGRESS: at 89.50% examples, 529877 words/s, in_qsize 36, out_qsize 1
+INFO: worker thread finished; awaiting finish of 31 more threads
+INFO: worker thread finished; awaiting finish of 30 more threads
+INFO: worker thread finished; awaiting finish of 29 more threads
+INFO: worker thread finished; awaiting finish of 28 more threads
+INFO: worker thread finished; awaiting finish of 27 more threads
+INFO: worker thread finished; awaiting finish of 26 more threads
+INFO: worker thread finished; awaiting finish of 25 more threads
+INFO: worker thread finished; awaiting finish of 24 more threads
+INFO: worker thread finished; awaiting finish of 23 more threads
+INFO: worker thread finished; awaiting finish of 22 more threads
+INFO: worker thread finished; awaiting finish of 21 more threads
+INFO: worker thread finished; awaiting finish of 20 more threads
+INFO: worker thread finished; awaiting finish of 19 more threads
+INFO: worker thread finished; awaiting finish of 18 more threads
+INFO: worker thread finished; awaiting finish of 17 more threads
+INFO: worker thread finished; awaiting finish of 16 more threads
+INFO: worker thread finished; awaiting finish of 15 more threads
+INFO: worker thread finished; awaiting finish of 14 more threads
+INFO: worker thread finished; awaiting finish of 13 more threads
+INFO: worker thread finished; awaiting finish of 12 more threads
+INFO: worker thread finished; awaiting finish of 11 more threads
+INFO: worker thread finished; awaiting finish of 10 more threads
+INFO: worker thread finished; awaiting finish of 9 more threads
+INFO: worker thread finished; awaiting finish of 8 more threads
+INFO: worker thread finished; awaiting finish of 7 more threads
+INFO: worker thread finished; awaiting finish of 6 more threads
+INFO: worker thread finished; awaiting finish of 5 more threads
+INFO: worker thread finished; awaiting finish of 4 more threads
+INFO: worker thread finished; awaiting finish of 3 more threads
+INFO: worker thread finished; awaiting finish of 2 more threads
+INFO: worker thread finished; awaiting finish of 1 more threads
+INFO: worker thread finished; awaiting finish of 0 more threads
+INFO: EPOCH - 8 : training on 3464634 raw words (2440429 effective words) took 4.4s, 554138 effective words/s
+INFO: EPOCH 9 - PROGRESS: at 17.19% examples, 386322 words/s, in_qsize 63, out_qsize 0
+INFO: EPOCH 9 - PROGRESS: at 43.36% examples, 511788 words/s, in_qsize 63, out_qsize 0
+INFO: EPOCH 9 - PROGRESS: at 68.58% examples, 548466 words/s, in_qsize 63, out_qsize 0
+INFO: worker thread finished; awaiting finish of 31 more threads
+INFO: worker thread finished; awaiting finish of 30 more threads
+INFO: worker thread finished; awaiting finish of 29 more threads
+INFO: worker thread finished; awaiting finish of 28 more threads
+INFO: worker thread finished; awaiting finish of 27 more threads
+INFO: worker thread finished; awaiting finish of 26 more threads
+INFO: worker thread finished; awaiting finish of 25 more threads
+INFO: worker thread finished; awaiting finish of 24 more threads
+INFO: worker thread finished; awaiting finish of 23 more threads
+INFO: worker thread finished; awaiting finish of 22 more threads
+INFO: worker thread finished; awaiting finish of 21 more threads
+INFO: worker thread finished; awaiting finish of 20 more threads
+INFO: worker thread finished; awaiting finish of 19 more threads
+INFO: worker thread finished; awaiting finish of 18 more threads
+INFO: worker thread finished; awaiting finish of 17 more threads
+INFO: worker thread finished; awaiting finish of 16 more threads
+INFO: worker thread finished; awaiting finish of 15 more threads
+INFO: worker thread finished; awaiting finish of 14 more threads
+INFO: worker thread finished; awaiting finish of 13 more threads
+INFO: worker thread finished; awaiting finish of 12 more threads
+INFO: worker thread finished; awaiting finish of 11 more threads
+INFO: worker thread finished; awaiting finish of 10 more threads
+INFO: worker thread finished; awaiting finish of 9 more threads
+INFO: worker thread finished; awaiting finish of 8 more threads
+INFO: worker thread finished; awaiting finish of 7 more threads
+INFO: worker thread finished; awaiting finish of 6 more threads
+INFO: EPOCH 9 - PROGRESS: at 98.65% examples, 595931 words/s, in_qsize 4, out_qsize 3
+INFO: worker thread finished; awaiting finish of 5 more threads
+INFO: worker thread finished; awaiting finish of 4 more threads
+INFO: worker thread finished; awaiting finish of 3 more threads
+INFO: worker thread finished; awaiting finish of 2 more threads
+INFO: worker thread finished; awaiting finish of 1 more threads
+INFO: worker thread finished; awaiting finish of 0 more threads
+INFO: EPOCH - 9 : training on 3464634 raw words (2440656 effective words) took 4.1s, 602305 effective words/s
+INFO: EPOCH 10 - PROGRESS: at 19.56% examples, 449277 words/s, in_qsize 62, out_qsize 1
+INFO: EPOCH 10 - PROGRESS: at 46.53% examples, 541799 words/s, in_qsize 63, out_qsize 0
+INFO: EPOCH 10 - PROGRESS: at 73.16% examples, 578202 words/s, in_qsize 59, out_qsize 4
+INFO: worker thread finished; awaiting finish of 31 more threads
+INFO: worker thread finished; awaiting finish of 30 more threads
+INFO: worker thread finished; awaiting finish of 29 more threads
+INFO: worker thread finished; awaiting finish of 28 more threads
+INFO: worker thread finished; awaiting finish of 27 more threads
+INFO: worker thread finished; awaiting finish of 26 more threads
+INFO: worker thread finished; awaiting finish of 25 more threads
+INFO: worker thread finished; awaiting finish of 24 more threads
+INFO: worker thread finished; awaiting finish of 23 more threads
+INFO: worker thread finished; awaiting finish of 22 more threads
+INFO: worker thread finished; awaiting finish of 21 more threads
+INFO: worker thread finished; awaiting finish of 20 more threads
+INFO: worker thread finished; awaiting finish of 19 more threads
+INFO: worker thread finished; awaiting finish of 18 more threads
+INFO: worker thread finished; awaiting finish of 17 more threads
+INFO: worker thread finished; awaiting finish of 16 more threads
+INFO: worker thread finished; awaiting finish of 15 more threads
+INFO: worker thread finished; awaiting finish of 14 more threads
+INFO: worker thread finished; awaiting finish of 13 more threads
+INFO: worker thread finished; awaiting finish of 12 more threads
+INFO: worker thread finished; awaiting finish of 11 more threads
+INFO: worker thread finished; awaiting finish of 10 more threads
+INFO: worker thread finished; awaiting finish of 9 more threads
+INFO: worker thread finished; awaiting finish of 8 more threads
+INFO: worker thread finished; awaiting finish of 7 more threads
+INFO: worker thread finished; awaiting finish of 6 more threads
+INFO: worker thread finished; awaiting finish of 5 more threads
+INFO: worker thread finished; awaiting finish of 4 more threads
+INFO: worker thread finished; awaiting finish of 3 more threads
+INFO: worker thread finished; awaiting finish of 2 more threads
+INFO: worker thread finished; awaiting finish of 1 more threads
+INFO: worker thread finished; awaiting finish of 0 more threads
+INFO: EPOCH - 10 : training on 3464634 raw words (2440154 effective words) took 3.8s, 638987 effective words/s
+INFO: training on a 34646340 raw words (24404931 effective words) took 38.0s, 642434 effective words/s

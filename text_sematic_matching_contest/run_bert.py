@@ -9,7 +9,6 @@ from utils import set_seed,DataProcessor,train_vector,\
 from models import Bert
 
 
-
 class Bert_Config:
     def __init__(self):
         #数据路径

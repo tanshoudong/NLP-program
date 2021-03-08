@@ -18,6 +18,7 @@ from collections import Counter
 from transformers import BertTokenizer
 import logging
 from sklearn.metrics import roc_auc_score
+from transformers import  BertForMaskedLM,BertForPreTraining,BertForSequenceClassification
 
 logger = logging.getLogger(__name__)
 
@@ -98,13 +99,36 @@ class train_vector:
                 for line in files:
                     line=line.strip().split('\t')
                     text_a,text_b=line[0].strip().split(" "),line[1].strip().split(" ")
-                    sentences.append(text_a)
-                    sentences.append(text_b)
+                    sentences.append(text_a + ['sep'] + text_b)
+                    sentences.append(text_b + ['sep'] + text_a)
+
         print("Sentence Num {}".format(len(sentences)))
         w2v = Word2Vec(sentences, size=L, window=4, min_count=1, sg=1, workers=32, iter=10)
         print("save w2v to {}".format(tmp_dir))
         pickle.dump(w2v, open(tmp_dir,'wb'))
         return w2v
+
+
+    def collate_fn_v1(self,batch_data):
+        batch_size = len(batch_data)
+        max_len = max([len(x[0]) for x in batch_data])
+        # for x, y in batch_data:
+        #     input_ids.append(x + (max_len - len(x)) * [0])
+        #     label.append(int(y))
+        inputs = np.zeros(shape=(batch_size,max_len,self.w2v.wv.vector_size))
+        mask = np.zeros(shape=(batch_size,max_len))
+        label=[]
+        for i,(x,y) in enumerate(batch_data):
+            for j,word in enumerate(x):
+                inputs[i,j] = self.w2v.wv[word]
+                mask[i,j] = 1
+            label.append(int(y))
+
+        inputs = torch.tensor(data=inputs).type(torch.FloatTensor)
+        mask = torch.tensor(data=mask).type(torch.LongTensor)
+        label = torch.tensor(data=label).type(torch.FloatTensor)
+        return inputs,mask,label
+
 
     def get_all_exampes_words(self):
         words=[]
@@ -183,16 +207,6 @@ class Vocab(object):
                 f.write(word+'\n')
             f.write('[UNK]')
 
-    def collate_fn_v1(self,batch_data):
-
-        max_len = max([len(x[0]) for x in batch_data])
-        max_len = max([])
-        input_ids, token_type_ids, attention_mask, label = [], [], [], []
-        for x, y, z, w in batch_data:
-            input_ids.append(x + (max_len - len(x)) * [padding_token])
-            token_type_ids.append(y + (max_len - len(y)) * [pad_token_segment_id])
-            attention_mask.append(z + (max_len - len(z)) * [0])
-            label.append(int(w))
 
 
 class BuildDataSet(Dataset):
@@ -225,10 +239,10 @@ class BuildDataSet_v1(Dataset):
         text_a=example[0].strip().split(" ")
         text_b=example[1].strip().split(" ")
         label=example[2]
-        text_a = [self.vocab[x] for x in text_a]
-        text_b = [self.vocab[x] for x in text_b]
+        # text_a = [self.vocab[x] for x in text_a]
+        # text_b = [self.vocab[x] for x in text_b]
 
-        return text_a,text_b,label
+        return text_a + ['sep'] + text_b,label
 
     def __len__(self):
         return self._len
@@ -331,19 +345,19 @@ def train_process(config, model, train_iter, dev_iter=None):
     for epoch in range(config.num_train_epochs):
         logger.info('Epoch [{}/{}]'.format(epoch + 1, config.num_train_epochs))
 
-        for batch, (input_ids, token_type_ids, attention_mask, label) in enumerate(train_iter):
+        for batch, (inputs,attention_mask,label) in enumerate(train_iter):
             global_batch += 1
             model.train()
-            input_ids = input_ids.to(config.device)
-            token_type_ids = token_type_ids.to(config.device)
+            inputs = inputs.to(config.device)
             attention_mask = attention_mask.to(config.device)
             labels = label.to(config.device)
-            outputs,loss = model(input_ids,token_type_ids,attention_mask,labels)
+            outputs,loss = model(inputs,attention_mask,labels)
             if config.n_gpu > 1:
                 loss = loss.mean()
 
             model.zero_grad()
             loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), config.max_grad_norm)
             optimizer.step()
             scheduler.step()  # Update learning rate schedule
 
@@ -358,7 +372,7 @@ def train_process(config, model, train_iter, dev_iter=None):
                 # dev 数据
                 dev_auc,dev_loss = 0,0
                 if dev_iter is not None:
-                    dev_auc,dev_loss = model_evaluate(config,model,dev_iter)
+                    dev_auc,dev_loss = model_evaluate_v1(config,model,dev_iter)
 
                     if dev_auc > dev_best_auc:
                         dev_best_auc = dev_auc
@@ -388,6 +402,32 @@ def model_evaluate(config,model,data_iter,test=False):
             attention_mask = attention_mask.to(config.device)
             labels = label.to(config.device)
             outputs,loss = model(input_ids, token_type_ids, attention_mask, labels)
+            if config.n_gpu > 1:
+                loss = loss.mean()
+            loss_total = loss_total+loss
+            predict_all.extend(outputs.cpu().detach().numpy())
+            labels_all.extend(labels.cpu().detach().numpy())
+
+
+    if test:
+        return predict_all
+    else:
+        dev_auc = roc_auc_score(labels_all, predict_all)
+        return dev_auc, loss_total/len(data_iter)
+
+def model_evaluate_v1(config,model,data_iter,test=False):
+    model.eval()
+    loss_total = 0
+    predict_all = []
+    labels_all = []
+    # total_inputs_error = []
+
+    with torch.no_grad():
+        for batch, (inputs,attention_mask,label) in enumerate(data_iter):
+            inputs = inputs.to(config.device)
+            attention_mask = attention_mask.to(config.device)
+            labels = label.to(config.device)
+            outputs, loss = model(inputs, attention_mask, labels)
             if config.n_gpu > 1:
                 loss = loss.mean()
             loss_total = loss_total+loss

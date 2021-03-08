@@ -5,8 +5,8 @@ import torch
 import time
 from torch.utils.data import DataLoader
 from utils import set_seed,DataProcessor,train_vector,\
-    Vocab,BuildDataSet_v1,train_process,model_save,model_evaluate,submit_result
-from models import Bert
+    Vocab,BuildDataSet_v1,train_process,model_save,model_evaluate_v1,submit_result
+from models import roBerta
 
 
 
@@ -26,10 +26,8 @@ class roBerta_Config:
         self.dev_num_examples = 0
         self.test_num_examples = 0
         self.hidden_dropout_prob = 0.1
-        self.hidden_size = [768]
-        self.early_stop = False
-        self.require_improvement = 500
-        self.num_train_epochs = 10                  # epoch数
+        self.hidden_size = [512]
+        self.num_train_epochs = 8                  # epoch数
         self.batch_size = 128                       # mini-batch大小
         self.learning_rate = 2e-5                  # 学习率
         self.head_learning_rate = 1e-3             # 后面的分类层的学习率
@@ -58,6 +56,8 @@ class roBerta_Config:
         self.n_gpu = torch.cuda.device_count()
         self.vocab_size = None
         self.data_enhance = True
+        self.embeding_size = 128
+        self.max_grad_norm = 1
 
 def roberta_task(config):
     processor = DataProcessor(config)
@@ -76,26 +76,23 @@ def roberta_task(config):
 
     train_dataset = BuildDataSet_v1(train,vocab)
     train_load = DataLoader(dataset=train_dataset,batch_size=config.batch_size,
-                            shuffle=True,collate_fn=vocab.collate_fn_v1)
+                            shuffle=True,collate_fn=train_ebeding.collate_fn_v1)
 
-    for batch,(a,b,c) in enumerate(train_load):
-        print(1)
-
-    dev_dataset = BuildDataSet(dev)
+    dev_dataset = BuildDataSet_v1(dev,vocab)
     dev_load = DataLoader(dataset=dev_dataset,batch_size=config.batch_size,
-                        shuffle=True,collate_fn=collate_fn)
-    test_dataset = BuildDataSet(test)
+                        shuffle=True,collate_fn=train_ebeding.collate_fn_v1)
+    test_dataset = BuildDataSet_v1(test,vocab)
     test_load = DataLoader(dataset=test_dataset,batch_size=config.batch_size,
-                           shuffle=False,collate_fn=collate_fn)
+                           shuffle=False,collate_fn=train_ebeding.collate_fn_v1)
 
-    config.vocab_size = train_dataset.tokenizer.vocab_size + 5
-    model = Bert(config).to(config.device)
+    config.vocab_size = len(train_ebeding.w2v.wv.vocab) + 5
+    model = roBerta(config).to(config.device)
 
     model_example,last_epoch_improve = train_process(config, model, train_iter = train_load, dev_iter = dev_load)
 
     model_save(config, model_example)
 
-    predict_result = model_evaluate(config, model_example, test_load,test=True)
+    predict_result = model_evaluate_v1(config, model_example, test_load,test=True)
     submit_result(predict_result)
     print("best epoch:{}".format(last_epoch_improve))
 
