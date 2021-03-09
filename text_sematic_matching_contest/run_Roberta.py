@@ -5,7 +5,7 @@ import torch
 import random
 import time
 from torch.utils.data import DataLoader
-from utils import set_seed,DataProcessor,train_vector,\
+from utils import set_seed,DataProcessor,train_vector,train_dev_test_for_mlm,\
     Vocab,BuildDataSet_v1,train_process,model_save,model_evaluate_v1,submit_result
 from models import roBerta
 
@@ -28,7 +28,7 @@ class roBerta_Config:
         self.test_num_examples = 0
         self.hidden_dropout_prob = 0.1
         self.hidden_size = [512]
-        self.num_train_epochs = 8                  # epoch数
+        self.num_train_epochs = 30                  # epoch数
         self.batch_size = 128                       # mini-batch大小
         self.learning_rate = 2e-5                  # 学习率
         self.head_learning_rate = 1e-3             # 后面的分类层的学习率
@@ -77,6 +77,10 @@ def roberta_task(config):
 
     test = processor.get_test_data(train_ebeding.data_dir[0])
 
+    #train + dev + test for MLM
+    train = train_dev_test_for_mlm(train,dev,test)
+
+
     train_dataset = BuildDataSet_v1(train,vocab)
     train_load = DataLoader(dataset=train_dataset,batch_size=config.batch_size,
                             shuffle=True,collate_fn=train_ebeding.collate_fn_v1)
@@ -88,17 +92,16 @@ def roberta_task(config):
     test_load = DataLoader(dataset=test_dataset,batch_size=config.batch_size,
                            shuffle=False,collate_fn=train_ebeding.collate_fn_v1)
 
-    config.vocab_size = len(train_ebeding.w2v.wv.vocab) + 5
+    config.vocab_size = len(vocab)
     model = roBerta(config).to(config.device)
 
-    model_example,last_epoch_improve = train_process(config, model, train_iter = train_load, dev_iter = dev_load)
+    model_example = train_process(config, model, train_iter = train_load, dev_iter = dev_load)
 
     model_save(config, model_example)
 
     predict_result = model_evaluate_v1(config, model_example, test_load,test=True)
     submit_result(predict_result)
-    print("best epoch:{}".format(last_epoch_improve))
-
+    pinrt("done!!!")
 
 
 

@@ -35,6 +35,15 @@ def compute_loss(outputs, labels, loss_method='binary'):
     return loss
 
 
+def train_dev_test_for_mlm(train,dev,test):
+    df = pd.concat([dev,test])
+    df["label"] = -1
+    tmp = pd.DataFrame()
+    tmp["text_left"], tmp["text_right"], tmp["label"] = df["text_right"], df["text_left"], df["label"]
+    all = pd.concat([train,df,tmp])
+    return all
+
+
 def set_seed(args):
     random.seed(args.seed)
     np.random.seed(args.seed)
@@ -121,6 +130,7 @@ class train_vector:
         output_id = np.zeros(shape=(batch_size,max_len))-100
 
         label=[]
+        # 选择20%的token进行掩码，其中80%设为[mask], 10%设为自己,10%随机选择
         for i,(x,y) in enumerate(batch_data):
             for j,word in enumerate(x):
                 mask[i, j] = 1
@@ -137,7 +147,6 @@ class train_vector:
                         output_id[i, j] = self.vocab[random_word]
                 else:
                     inputs[i,j] = self.w2v.wv[word]
-                    output_id[i,j] = self.vocab[word]
             label.append(int(y))
 
         inputs = torch.tensor(data=inputs).type(torch.FloatTensor)
@@ -163,12 +172,11 @@ class train_vector:
 class Vocab(object):
     PAD = 0
     UNK = 1
-    MASK = 2
 
     def __init__(self):
         self.word2index = {}
         self.word2count = Counter()
-        self.reserved = ['<PAD>','<UNK>','MASK']
+        self.reserved = ['<PAD>','<UNK>']
         self.index2word = self.reserved[:]
         self.embeddings = None
 
@@ -351,10 +359,11 @@ def train_process(config, model, train_iter, dev_iter=None):
     logger.info("  Total optimization steps = %d", t_total)
     logger.info("  Train device:%s", config.device)
 
-    global_batch = 0  # 记录进行到多少batch
+    # global_batch = 0  # 记录进行到多少batch
     dev_best_auc = 0
-    predict_all = []
-    labels_all = []
+    best_epoch = 0
+    # predict_all = []
+    # labels_all = []
     best_model = copy.deepcopy(model)
 
     if config.n_gpu>1:
@@ -363,13 +372,14 @@ def train_process(config, model, train_iter, dev_iter=None):
     for epoch in range(config.num_train_epochs):
         logger.info('Epoch [{}/{}]'.format(epoch + 1, config.num_train_epochs))
 
-        for batch, (inputs,attention_mask,label) in enumerate(train_iter):
+        for batch, (inputs,attention_mask,output_id,label) in enumerate(train_iter):
             global_batch += 1
             model.train()
             inputs = inputs.to(config.device)
             attention_mask = attention_mask.to(config.device)
+            output_id = output_id.to(config.device)
             labels = label.to(config.device)
-            outputs,loss = model(inputs,attention_mask,labels)
+            loss,_ = model(inputs,attention_mask,output_id,label)
             if config.n_gpu > 1:
                 loss = loss.mean()
 
@@ -379,30 +389,39 @@ def train_process(config, model, train_iter, dev_iter=None):
             optimizer.step()
             scheduler.step()  # Update learning rate schedule
 
-            outputs = outputs.cpu().detach().numpy()
-            labels_all.extend(labels.cpu().detach().numpy())
-            predict_all.extend(outputs)
+        dev_auc,dev_loss = model_evaluate_v1(config,model,dev_iter)
+        if dev_auc > dev_best_auc:
+            dev_best_auc = dev_auc
+            best_epoch = epoch + 1
+            best_model = copy.deepcopy(model)
+        msg = 'Epoch:{}/{},Dev_loss:{},Dev_auc:{},best_dev_auc:{},Time:{}'
+        now = strftime("%Y-%m-%d %H:%M:%S", localtime())
+        logging.info(msg.format(epoch+1,config.num_train_epochs,dev_loss,dev_auc,dev_best_auc,now))
 
-            if global_batch % 100 == 0:
-                train_auc = roc_auc_score(labels_all,predict_all)
-                labels_all,predict_all = [],[]
+            # outputs = outputs.cpu().detach().numpy()
+            # labels_all.extend(labels.cpu().detach().numpy())
+            # predict_all.extend(outputs)
+
+            # if global_batch % 100 == 0:
+            #     train_auc = roc_auc_score(labels_all,predict_all)
+            #     labels_all,predict_all = [],[]
 
                 # dev 数据
-                dev_auc,dev_loss = 0,0
-                if dev_iter is not None:
-                    dev_auc,dev_loss = model_evaluate_v1(config,model,dev_iter)
+                # dev_auc,dev_loss = 0,0
+                # if dev_iter is not None:
+                #     dev_auc,dev_loss = model_evaluate_v1(config,model,dev_iter)
+                #
+                #     if dev_auc > dev_best_auc:
+                #         dev_best_auc = dev_auc
+                #         last_batch_improve = global_batch
+                #         last_epoch_improve = epoch
+                #         best_model = copy.deepcopy(model)
 
-                    if dev_auc > dev_best_auc:
-                        dev_best_auc = dev_auc
-                        last_batch_improve = global_batch
-                        last_epoch_improve = epoch
-                        best_model = copy.deepcopy(model)
-
-                msg = 'Epoch:{},Iter:{}/{},Train_loss:{},Train_auc:{},Dev_loss:{},Dev_auc:{},Time:{}'
-                now = strftime("%Y-%m-%d %H:%M:%S", localtime())
-                logging.info(msg.format(epoch,global_batch,t_total,loss.cpu().data.item(),
-                                        train_auc,dev_loss.cpu().data.item(),dev_auc,now))
-    return best_model ,last_epoch_improve
+                # msg = 'Epoch:{},Iter:{}/{},Train_loss:{},Train_auc:{},Dev_loss:{},Dev_auc:{},Time:{}'
+                # now = strftime("%Y-%m-%d %H:%M:%S", localtime())
+                # logging.info(msg.format(epoch,global_batch,t_total,loss.cpu().data.item(),
+                #                         train_auc,dev_loss.cpu().data.item(),dev_auc,now))
+    return best_model
 
 
 
@@ -441,11 +460,12 @@ def model_evaluate_v1(config,model,data_iter,test=False):
     # total_inputs_error = []
 
     with torch.no_grad():
-        for batch, (inputs,attention_mask,label) in enumerate(data_iter):
+        for batch, (inputs,attention_mask,output_id,label) in enumerate(data_iter):
             inputs = inputs.to(config.device)
             attention_mask = attention_mask.to(config.device)
+            output_id = output_id.to(config.device)
             labels = label.to(config.device)
-            outputs, loss = model(inputs, attention_mask, labels)
+            loss,outputs = model(inputs,attention_mask,output_id,label)
             if config.n_gpu > 1:
                 loss = loss.mean()
             loss_total = loss_total+loss
