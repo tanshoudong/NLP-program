@@ -2,6 +2,7 @@
 import os
 import logging
 import torch
+import random
 import time
 from torch.utils.data import DataLoader
 from utils import set_seed,DataProcessor,train_vector,\
@@ -70,7 +71,9 @@ def roberta_task(config):
     train_ebeding=train_vector(config)
     vocab=Vocab()
     vocab.add_words(train_ebeding.get_all_exampes_words())
-    vocab.build_bert_vocab()
+    # vocab.build_bert_vocab()
+    train_ebeding.vocab = vocab
+
 
     test = processor.get_test_data(train_ebeding.data_dir[0])
 

@@ -76,7 +76,7 @@ class DataProcessor:
 
     def get_test_data(self,test_dir):
         test = pd.read_csv(test_dir,sep='\t',names=['text_left','text_right'])
-        test["label"]=2
+        test["label"]=-1
         return test
 
 
@@ -87,6 +87,7 @@ class train_vector:
         self.data_dir=[os.path.join(os.path.dirname(self.config.data_dir),i) for i in
         os.listdir(os.path.dirname(self.config.data_dir))]
         self.w2v=self.train_w2v()
+        self.vocab =  None
 
 
     def train_w2v(self,L=128):
@@ -99,8 +100,8 @@ class train_vector:
                 for line in files:
                     line=line.strip().split('\t')
                     text_a,text_b=line[0].strip().split(" "),line[1].strip().split(" ")
-                    sentences.append(text_a + ['sep'] + text_b)
-                    sentences.append(text_b + ['sep'] + text_a)
+                    sentences.append(text_a + text_b)
+                    sentences.append(text_b + text_a)
 
         print("Sentence Num {}".format(len(sentences)))
         w2v = Word2Vec(sentences, size=L, window=4, min_count=1, sg=1, workers=32, iter=10)
@@ -117,17 +118,33 @@ class train_vector:
         #     label.append(int(y))
         inputs = np.zeros(shape=(batch_size,max_len,self.w2v.wv.vector_size))
         mask = np.zeros(shape=(batch_size,max_len))
+        output_id = np.zeros(shape=(batch_size,max_len))-100
+
         label=[]
         for i,(x,y) in enumerate(batch_data):
             for j,word in enumerate(x):
-                inputs[i,j] = self.w2v.wv[word]
-                mask[i,j] = 1
+                mask[i, j] = 1
+                if random.random() < 0.2:
+                    prob = random.random()
+                    if prob < 0.8:
+                        output_id[i, j] = self.vocab[word]
+                    elif prob < 0.9:
+                        inputs[i, j] = self.w2v.wv[word]
+                        output_id[i, j] = self.vocab[word]
+                    else:
+                        random_word = random.choice(list(self.w2v.wv.vocab.keys()))
+                        inputs[i, j] = self.w2v.wv[random_word]
+                        output_id[i, j] = self.vocab[random_word]
+                else:
+                    inputs[i,j] = self.w2v.wv[word]
+                    output_id[i,j] = self.vocab[word]
             label.append(int(y))
 
         inputs = torch.tensor(data=inputs).type(torch.FloatTensor)
         mask = torch.tensor(data=mask).type(torch.LongTensor)
+        output_id = torch.tensor(data=output_id).type(torch.LongTensor)
         label = torch.tensor(data=label).type(torch.FloatTensor)
-        return inputs,mask,label
+        return inputs,mask,output_id,label
 
 
     def get_all_exampes_words(self):
@@ -146,11 +163,12 @@ class train_vector:
 class Vocab(object):
     PAD = 0
     UNK = 1
+    MASK = 2
 
     def __init__(self):
         self.word2index = {}
         self.word2count = Counter()
-        self.reserved = ['<PAD>','<UNK>']
+        self.reserved = ['<PAD>','<UNK>','MASK']
         self.index2word = self.reserved[:]
         self.embeddings = None
 
@@ -242,7 +260,7 @@ class BuildDataSet_v1(Dataset):
         # text_a = [self.vocab[x] for x in text_a]
         # text_b = [self.vocab[x] for x in text_b]
 
-        return text_a + ['sep'] + text_b,label
+        return text_a + text_b,label
 
     def __len__(self):
         return self._len
