@@ -118,7 +118,7 @@ class roBerta(nn.Module):
 
         labels_bool = labels.ne(-1)
         if labels_bool.sum().item() == 0:
-            return mlm_loss,None
+            return mlm_loss,torch.tensor([])
 
         #calculate label loss
         pooled_output = bert_outputs[1]

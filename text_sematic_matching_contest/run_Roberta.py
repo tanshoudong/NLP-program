@@ -83,9 +83,10 @@ def roberta_task(config):
 
     train_dataset = BuildDataSet_v1(train,vocab)
     train_load = DataLoader(dataset=train_dataset,batch_size=config.batch_size,
-                            shuffle=True,collate_fn=train_ebeding.collate_fn_v1)
+                            shuffle=True,collate_fn=train_ebeding.collate_fn_v1,)
 
     dev_dataset = BuildDataSet_v1(dev,vocab)
+
     dev_load = DataLoader(dataset=dev_dataset,batch_size=config.batch_size,
                         shuffle=True,collate_fn=train_ebeding.collate_fn_v1)
     test_dataset = BuildDataSet_v1(test,vocab)

@@ -85,7 +85,7 @@ class DataProcessor:
 
     def get_test_data(self,test_dir):
         test = pd.read_csv(test_dir,sep='\t',names=['text_left','text_right'])
-        test["label"]=-1
+        test["label"] = -2
         return test
 
 
@@ -373,7 +373,6 @@ def train_process(config, model, train_iter, dev_iter=None):
         logger.info('Epoch [{}/{}]'.format(epoch + 1, config.num_train_epochs))
 
         for batch, (inputs,attention_mask,output_id,label) in enumerate(train_iter):
-            global_batch += 1
             model.train()
             inputs = inputs.to(config.device)
             attention_mask = attention_mask.to(config.device)
