@@ -374,6 +374,7 @@ def train_process(config, model, train_iter, dev_iter=None):
 
         for batch, (inputs,attention_mask,output_id,label) in enumerate(train_iter):
             model.train()
+            inputs.to()
             inputs = inputs.to(config.device)
             attention_mask = attention_mask.to(config.device)
             output_id = output_id.to(config.device)
@@ -497,3 +498,9 @@ def submit_result(ls):
 
 
 
+def model_load(config, model, num=0, device='cpu'):
+    file_name = os.path.join(config.save_path[num], config.save_file[num]+'.pkl')
+    logger.info('loading model: %s', file_name)
+    model = model.load_state_dict(torch.load(file_name,
+                                     map_location=device if device == 'cpu' else "{}:{}".format(device, 0)))
+    return model

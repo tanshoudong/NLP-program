@@ -85,6 +85,7 @@ def roberta_task(config):
     train_load = DataLoader(dataset=train_dataset,batch_size=config.batch_size,
                             shuffle=True,collate_fn=train_ebeding.collate_fn_v1,)
 
+
     dev_dataset = BuildDataSet_v1(dev,vocab)
 
     dev_load = DataLoader(dataset=dev_dataset,batch_size=config.batch_size,
@@ -102,7 +103,7 @@ def roberta_task(config):
 
     predict_result = model_evaluate_v1(config, model_example, test_load,test=True)
     submit_result(predict_result)
-    pinrt("done!!!")
+    print("done!!!")
 
 
 
