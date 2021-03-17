@@ -18,7 +18,7 @@ from collections import Counter
 from transformers import BertTokenizer
 import logging
 from sklearn.metrics import roc_auc_score
-from transformers import  BertForMaskedLM,BertForPreTraining,BertForSequenceClassification
+from transformers import  RobertaTokenizer
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +48,7 @@ def set_seed(args):
     random.seed(args.seed)
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
+    cudnn.deterministic = True
     if args.n_gpu > 0:
         torch.cuda.manual_seed_all(args.seed)
 
@@ -173,43 +174,27 @@ class Vocab(object):
     PAD = 0
     UNK = 1
 
-    def __init__(self):
+    def __init__(self,config):
         self.word2index = {}
         self.word2count = Counter()
         self.reserved = ['<PAD>','<UNK>']
         self.index2word = self.reserved[:]
         self.embeddings = None
+        self.data_dir = [os.path.join(os.path.dirname(config.data_dir), i) for i in
+                         os.listdir(os.path.dirname(config.data_dir))]
 
-    def add_words(self, words):
+    def add_words(self):
         """Add a new token to the vocab and do mapping between word and index.
 
         Args:
             words (list): The list of tokens to be added.
         """
+        words = self.get_all_exampes_words()
         for word in words:
             if word not in self.word2index:
                 self.word2index[word] = len(self.index2word)
                 self.index2word.append(word)
         self.word2count.update(words)
-
-    def load_embeddings(self, file_path: str, dtype=np.float32) -> int:
-        num_embeddings = 0
-        vocab_size = len(self)
-        with open(file_path, 'rb') as f:
-            for line in f:
-                line = line.split()
-                word = line[0].decode('utf-8')
-                idx = self.word2index.get(word)
-                if idx is not None:
-                    vec = np.array(line[1:], dtype=dtype)
-                    if self.embeddings is None:
-                        n_dims = len(vec)
-                        self.embeddings = np.random.normal(
-                            np.zeros((vocab_size, n_dims))).astype(dtype)
-                        self.embeddings[self.PAD] = np.zeros(n_dims)
-                    self.embeddings[idx] = vec
-                    num_embeddings += 1
-        return num_embeddings
 
     def __getitem__(self, item):
         if type(item) is int:
@@ -233,25 +218,48 @@ class Vocab(object):
                 f.write(word+'\n')
             f.write('[UNK]')
 
+    def get_all_exampes_words(self):
+        words=[]
+        for dir in self.data_dir:
+            with open(file=dir,mode="r",encoding="utf-8") as files:
+                for line in files:
+                    line=line.strip().split('\t')
+                    text_a,text_b=line[0].strip().split(" "),line[1].strip().split(" ")
+                    words+=text_a
+                    words+=text_b
+        return words
+
+    def get_pre_trained_examples(self):
+        examples = []
+        for dir in self.data_dir:
+            with open(file=dir,mode="r",encoding="utf-8") as files:
+                for line in files:
+                    line=line.strip().split('\t')
+                    text_a,text_b=line[0].strip().split(" "),line[1].strip().split(" ")
+                    examples.append(text_a + text_b)
+                    # examples.append(text_b + text_a)
+
+        return examples
+
 
 
 class BuildDataSet(Dataset):
     def __init__(self,dataset):
-        self.dataset = dataset.values
+        self.dataset = dataset
         self.tokenizer=BertTokenizer.from_pretrained('vocab')
         self._len = len(self.dataset)
 
     def __getitem__(self, index):
+
         example=self.dataset[index]
-        text_a=example[0].strip().split(" ")
-        text_b=example[1].strip().split(" ")
-        label=example[2]
-        encode=self.tokenizer.encode_plus(text_a,text_b,add_special_tokens=True)
-        input_ids,token_type_ids,attention_mask=encode["input_ids"],encode["token_type_ids"],encode["attention_mask"]
-        return input_ids,token_type_ids,attention_mask,label
+        example,label = random_mask(example)
+        inputs = self.tokenizer(" ".join(example), return_tensors="pt")
+        label = self.tokenizer(" ".join(label))["input_ids"]
+        return inputs,label
 
     def __len__(self):
         return self._len
+
 
 
 class BuildDataSet_v1(Dataset):
@@ -276,22 +284,41 @@ class BuildDataSet_v1(Dataset):
 
 
 def collate_fn(batch_data,padding_token=0,pad_token_segment_id=0):
-    max_len=max([len(x[0]) for x in batch_data])
+    max_len = max([len(x[1]) for x in batch_data])
     input_ids, token_type_ids, attention_mask, label=[],[],[],[]
-    for x,y,z,w in batch_data:
-        input_ids.append(x+(max_len-len(x))*[padding_token])
-        token_type_ids.append(y+(max_len-len(y))*[pad_token_segment_id])
-        attention_mask.append(z+(max_len-len(z))*[0])
-        label.append(int(w))
+    for x,y in batch_data:
+        x,z,w = x["input_ids"],x["token_type_ids"],x["attention_mask"]
+        input_ids.append(list(x.numpy()[0])+(max_len-len(x[0]))*[padding_token])
+        token_type_ids.append(list(z.numpy()[0])+(max_len-len(z[0]))*[pad_token_segment_id])
+        attention_mask.append(list(w.numpy()[0])+(max_len-len(w[0]))*[0])
+        label.append(y+(max_len-len(y))*[0])
 
     input_ids = torch.tensor(data=input_ids).type(torch.LongTensor)
     token_type_ids = torch.tensor(data=token_type_ids).type(torch.LongTensor)
     attention_mask = torch.tensor(data=attention_mask).type(torch.LongTensor)
-    label = torch.tensor(data=label).type(torch.FloatTensor)
+    label = torch.tensor(data=label).type(torch.LongTensor)
     return input_ids, token_type_ids, attention_mask, label
 
 
-
+def random_mask(text_ids):
+    """随机mask
+    """
+    input_ids, output_ids = [], []
+    rands = np.random.random(len(text_ids))
+    for r, i in zip(rands, text_ids):
+        if r < 0.15 * 0.8:
+            input_ids.append('[MASK]')
+            output_ids.append(i)
+        elif r < 0.15 * 0.9:
+            input_ids.append(i)
+            output_ids.append(i)
+        elif r < 0.15:
+            input_ids.append(str(np.random.choice(20600)))
+            output_ids.append(i)
+        else:
+            input_ids.append(i)
+            output_ids.append('[PAD]')
+    return input_ids, output_ids
 
 
 
@@ -374,7 +401,6 @@ def train_process(config, model, train_iter, dev_iter=None):
 
         for batch, (inputs,attention_mask,output_id,label) in enumerate(train_iter):
             model.train()
-            inputs.to()
             inputs = inputs.to(config.device)
             attention_mask = attention_mask.to(config.device)
             output_id = output_id.to(config.device)
