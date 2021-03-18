@@ -241,6 +241,29 @@ class Vocab(object):
 
         return examples
 
+    def get_train_dev_test(self):
+        train_ls = []
+        test_data = []
+        for dir in self.data_dir:
+            with open(file=dir,mode="r",encoding="utf-8") as files:
+                for line in files:
+                    line=line.strip().split('\t')
+                    if 'train' in dir:
+                        text_a,text_b,labal=line[0].strip(),\
+                                            line[1].strip(),line[2].strip()
+                        train_ls.append((text_a + ' ' +text_b,labal))
+                    else:
+                        text_a, text_b = line[0].strip(), \
+                                                line[1].strip()
+                        test_data.append((text_a + ' ' +text_b,-100))
+
+        train_data = [d for i, d in enumerate(train_ls) if i % 10 != 0]
+        valid_data = [d for i, d in enumerate(train_ls) if i % 10 == 0]
+        return train_data,valid_data,test_data
+
+
+
+
 
 
 class BuildDataSet(Dataset):
@@ -451,32 +474,30 @@ def train_process(config, model, train_iter, dev_iter=None):
 
 
 
-def model_evaluate(config,model,data_iter,test=False):
+def model_evaluate(config,model,data_iter):
     model.eval()
-    loss_total = 0
     predict_all = []
-    labels_all = []
-    # total_inputs_error = []
+    label_all = []
 
     with torch.no_grad():
-        for batch,(input_ids,token_type_ids,attention_mask,label) in enumerate(data_iter):
-            input_ids = input_ids.to(config.device)
-            token_type_ids = token_type_ids.to(config.device)
-            attention_mask = attention_mask.to(config.device)
-            labels = label.to(config.device)
-            outputs,loss = model(input_ids, token_type_ids, attention_mask, labels)
-            if config.n_gpu > 1:
-                loss = loss.mean()
-            loss_total = loss_total+loss
-            predict_all.extend(outputs.cpu().detach().numpy())
-            labels_all.extend(labels.cpu().detach().numpy())
+        for batch, (input_ids, token_type_ids, attention_mask, label) in enumerate(data_iter):
+            input_ids = input_ids.cuda(config.local_rank, non_blocking=True)
+            attention_mask = attention_mask.cuda(config.local_rank, non_blocking=True)
+            token_type_ids = token_type_ids.cuda(config.local_rank, non_blocking=True)
+            label = label.cuda(config.local_rank, non_blocking=True)
 
+            outputs = model(input_ids=input_ids, attention_mask=attention_mask,
+                            token_type_ids=token_type_ids, labels=label)
 
-    if test:
-        return predict_all
-    else:
-        dev_auc = roc_auc_score(labels_all, predict_all)
-        return dev_auc, loss_total/len(data_iter)
+            loss = outputs.loss
+            logits = outputs.logits
+            pred_pob = torch.nn.functional.softmax(logits, dim=1)[:, 1]
+            predict_all.extend(list(pred_pob.detach().cpu().numpy()))
+            label_all.extend(list(label.detach().cpu().numpy()))
+
+        dev_auc = roc_auc_score(label_all, predict_all)
+        return dev_auc
+
 
 def model_evaluate_v1(config,model,data_iter,test=False):
     model.eval()
