@@ -1,8 +1,7 @@
-
 ###背景
     全球人工智能技术创新大赛  赛道三: 小布助手对话短文本语义匹配,rank45/5345,后期坑在了docker，复赛截至前三天匆匆提交了一次，
     否则成绩不至于如此.....
-   [赛题地址](https://tianchi.aliyun.com/competition/entrance/531851/introduction?spm=5176.12281957.1004.6.72c13eafugruPS)
+    [赛题地址](https://tianchi.aliyun.com/competition/entrance/531851/introduction?spm=5176.12281957.1004.6.72c13eafugruPS)
     
 ###算法程序说明
     分为预训练、finetune和infer三个部分，总共三个模型，分别为bert、electra、nezha，每个模型分别进行预训练和finetune，五折交叉验证，结果
