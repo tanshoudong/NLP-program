@@ -1,0 +1,22 @@
+{
+  "prov": 1,
+  "city": 2,
+  "district": 3,
+  "devzone": 4,
+  "town": 5,
+  "community": 6,
+  "village_group": 7,
+  "road": 8,
+  "roadno": 9,
+  "poi": 10,
+  "subpoi": 11,
+  "houseno": 12,
+  "cellno": 13,
+  "floorno": 14,
+  "roomno": 15,
+  "detail": 16,
+  "assist": 17,
+  "distance": 18,
+  "intersection": 19,
+  "redundant": 20
+}
