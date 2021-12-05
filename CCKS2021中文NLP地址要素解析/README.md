@@ -1,4 +1,4 @@
-### 英特尔创新大师杯”深度学习挑战赛  赛道2：CCKS2021中文NLP地址要素解析-rank4
+### “英特尔创新大师杯”深度学习挑战赛  赛道2：CCKS2021中文NLP地址要素解析-rank4
     奖项：技术创新奖
     团队名称：spring
     赛题地址：https://tianchi.aliyun.com/competition/entrance/531900/introduction
